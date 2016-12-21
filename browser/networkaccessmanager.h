@@ -67,6 +67,7 @@ public slots:
     void requestFinished(QNetworkReply *reply);
 
 private slots:
+    void readReplyInternal();
     void authenticationRequired(QNetworkReply *reply, QAuthenticator *auth);
     void proxyAuthenticationRequired(const QNetworkProxy &proxy, QAuthenticator *auth);
 #ifndef QT_NO_OPENSSL
