@@ -1,6 +1,7 @@
-<!DOCTYPE RCC><RCC version="1.0">
+<RCC>
     <qresource prefix="/plugin">
         <file>inject.html</file>
         <file>checkscript.js</file>
+        <file>inject.css</file>
     </qresource>
 </RCC>

@@ -6,6 +6,7 @@
 #include <QWebElement>
 #include <QNetworkCookie>
 #include <QNetworkCookieJar>
+#include <QtGui/QDesktopServices>
 
 #include <QDebug>
 
@@ -18,7 +19,11 @@ Plugin::~Plugin()
 bool Plugin::isMyUrl(const QUrl &url) const
 {
     QString host = url.host();
-    if(host.endsWith(".daimonmicha.bplaced.net")) return(true);
+
+    foreach(QString pattern, m_settings.urlPatterns) {
+        if(host.endsWith(pattern)) return(true);
+    }
+
     return(false);
 }
 
@@ -31,10 +36,34 @@ void Plugin::loadSettings(QSettings &settings)
     QTime time = QTime::currentTime();
     qsrand((uint)time.msec());
 
-    settings.beginGroup(QLatin1String("plugin"));
+    m_excludeExtensions
+            << "js"
+            << "mp3"
+            << "ogg"
+            << "css"
+            << "cur"
+            << "ico"
+            << "gif"
+            << "png"
+            << "jpg"
+            << "swf"
+               ;
+
+    settings.beginGroup(name());
+
+    m_settings.enabled = settings.value(QLatin1String("enabled"), true).toBool();
+    m_settings.templatePath = settings.value(QLatin1String("templatePath"),
+                        QStandardPaths::writableLocation(QStandardPaths::DataLocation) + QLatin1String("/template")).toString();
+    m_settings.urlPatterns = settings.value(QLatin1String("patterns"),
+                        QStringList("daimonmicha.bplaced.net")).toStringList();
+
     settings.endGroup();
 
-    qDebug() << "\tPlugin::loadSettings";
+    qDebug() << "\tPlugin::loadSettings" << m_settings.urlPatterns;
+}
+
+void Plugin::saveSettings(QSettings &)
+{
 }
 
 Account *Plugin::accFromCookie(const QString cValue)
@@ -52,14 +81,10 @@ Account *Plugin::accFromCookie(const QString cValue)
 
 int Plugin::readDataFile(const QString file, QString& data)
 {
-    QString path;
-    //path = qApp->applicationDirPath() + "/plugins/battleknight/htmls/";
-    // path = "/home/micha/.local/share/DaimonNetworks/webkitBrowser";
-    path = "/home/micha/Projekte/gameBrowser/plugins/plugin/htmls/";
     QFile inject;
-    inject.setFileName(path + file);
+    inject.setFileName(m_settings.templatePath + file);
     if(!inject.open(QIODevice::ReadOnly)) {
-        inject.setFileName(":/plugin/" + file);
+        inject.setFileName(":/"+name().toLower()+"/" + file);
         if(!inject.open(QIODevice::ReadOnly)) {
             return(-1);
         }
@@ -80,10 +105,19 @@ void Plugin::injectHtml(QWebFrame* mainFrame, Account* account)
     QWebElement pluginDiv = mainFrame->findFirstElement("#accountPlugin");
     if(!pluginDiv.isNull()) return;
 
-    QString di;
-    if(readDataFile("inject.html", di) <= 0) return;
-
     QWebElement body = mainFrame->findFirstElement("body");
+    QString di;
+
+    di.truncate(0);
+    if(readDataFile("inject.css", di) <= 0) {
+        return;
+    }
+    body.appendInside(di);
+
+    di.truncate(0);
+    if(readDataFile("inject.html", di) <= 0) {
+        return;
+    }
     body.appendInside(di);
 
     if(account->isActive("account")) {
@@ -92,7 +126,9 @@ void Plugin::injectHtml(QWebFrame* mainFrame, Account* account)
     }
 
     di.truncate(0);
-    if(readDataFile("checkscript.js", di) <= 0) return;
+    if(readDataFile("checkscript.js", di) <= 0) {
+        return;
+    }
     mainFrame->evaluateJavaScript(di);
 }
 

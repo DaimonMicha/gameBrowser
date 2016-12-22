@@ -8,6 +8,14 @@
 #include <QWidget>
 #include <QWebPage>
 
+class PluginSettings
+{
+public:
+    bool                        enabled;
+    QString                     templatePath;
+    QStringList                 urlPatterns;
+};
+
 class PluginInterface
 {
 public:
@@ -18,6 +26,7 @@ public:
     virtual QWidget* settingsWidget() const { return(new QWidget()); }
 
     virtual void loadSettings(QSettings &) {}
+    virtual void saveSettings(QSettings &) {}
 
     virtual void replyFinished(QNetworkReply *) {}
     virtual void loadFinished(QWebPage*) {}

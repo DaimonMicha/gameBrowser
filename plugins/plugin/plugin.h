@@ -19,6 +19,7 @@ public:
     bool isMyUrl(const QUrl &) const;
 
     void loadSettings(QSettings &);
+    void saveSettings(QSettings &);
 
     void replyFinished(QNetworkReply*);
     void loadFinished(QWebPage*);
@@ -29,7 +30,9 @@ private:
     void injectHtml(QWebFrame*, Account*);
 
 private:
-    QList<Account *>      m_accounts;
+    PluginSettings              m_settings;
+    QStringList                 m_excludeExtensions;
+    QList<Account *>            m_accounts;
 };
 
 #endif // PLUGIN_H

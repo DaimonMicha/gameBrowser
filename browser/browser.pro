@@ -8,6 +8,8 @@ TARGET           = gameBrowser
 qtHaveModule(uitools):!embedded: QT += uitools
 else: DEFINES += QT_NO_UITOOLS
 
+DEFINES         += QT_NO_DEBUG_OUTPUT
+
 include(../global.pri)
 
 

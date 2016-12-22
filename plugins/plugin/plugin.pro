@@ -23,6 +23,7 @@ HEADERS         += \
                 account.h
 
 OTHER_FILES     += \
+                htmls/inject.css \
                 htmls/inject.html \
                 htmls/checkscript.js
 
