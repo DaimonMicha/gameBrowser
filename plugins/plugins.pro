@@ -1,5 +1,7 @@
 TEMPLATE         = subdirs
 
 SUBDIRS         += \
+                plugin \
+#                chicago1920 \
 #                battleknight \
-#                chicago1920
+#                mechrage

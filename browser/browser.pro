@@ -1,6 +1,9 @@
 TEMPLATE         = app
-TARGET           = ../gameBrowser
+
 QT              += webkitwidgets network widgets printsupport
+
+DESTDIR          = ../
+TARGET           = gameBrowser
 
 qtHaveModule(uitools):!embedded: QT += uitools
 else: DEFINES += QT_NO_UITOOLS
@@ -33,6 +36,8 @@ HEADERS         += \
                 history.h \
                 modelmenu.h \
                 networkaccessmanager.h \
+                plugininterface.h \
+                pluginmanager.h \
                 searchlineedit.h \
                 settings.h \
                 squeezelabel.h \
@@ -55,6 +60,7 @@ SOURCES         += \
                 history.cpp \
                 modelmenu.cpp \
                 networkaccessmanager.cpp \
+                pluginmanager.cpp \
                 searchlineedit.cpp \
                 settings.cpp \
                 squeezelabel.cpp \
@@ -73,7 +79,7 @@ build_all:!build_pass {
 }
 
 win32 {
-   RC_FILE = browser.rc
+    RC_FILE = browser.rc
 }
 
 mac {

@@ -47,6 +47,7 @@
 #include "downloadmanager.h"
 #include "history.h"
 #include "networkaccessmanager.h"
+#include "pluginmanager.h"
 #include "tabwidget.h"
 #include "webview.h"
 
@@ -74,6 +75,7 @@ DownloadManager *BrowserApplication::s_downloadManager = 0;
 HistoryManager *BrowserApplication::s_historyManager = 0;
 NetworkAccessManager *BrowserApplication::s_networkAccessManager = 0;
 BookmarksManager *BrowserApplication::s_bookmarksManager = 0;
+PluginManager *BrowserApplication::s_pluginManager = 0;
 
 BrowserApplication::BrowserApplication(int &argc, char **argv)
     : QApplication(argc, argv)
@@ -155,6 +157,7 @@ BrowserApplication::~BrowserApplication()
     }
     delete s_networkAccessManager;
     delete s_bookmarksManager;
+    delete s_pluginManager;
 }
 
 #if defined(Q_WS_MAC)
@@ -220,6 +223,7 @@ void BrowserApplication::postLaunch()
             mainWindow()->slotHome();
     }
     BrowserApplication::historyManager();
+    BrowserApplication::pluginManager()->loadPlugins();
 }
 
 void BrowserApplication::loadSettings()
@@ -251,6 +255,8 @@ void BrowserApplication::loadSettings()
     defaultSettings->setAttribute(QWebSettings::DnsPrefetchEnabled, true);
 
     settings.endGroup();
+
+    BrowserApplication::pluginManager()->loadSettings();
 }
 
 QList<BrowserMainWindow*> BrowserApplication::mainWindows()
@@ -445,6 +451,14 @@ BookmarksManager *BrowserApplication::bookmarksManager()
         s_bookmarksManager = new BookmarksManager;
     }
     return s_bookmarksManager;
+}
+
+PluginManager *BrowserApplication::pluginManager()
+{
+    if (!s_pluginManager) {
+        s_pluginManager = new PluginManager();
+    }
+    return s_pluginManager;
 }
 
 QIcon BrowserApplication::icon(const QUrl &url) const

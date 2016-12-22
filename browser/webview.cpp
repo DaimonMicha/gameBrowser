@@ -44,6 +44,7 @@
 #include "cookiejar.h"
 #include "downloadmanager.h"
 #include "networkaccessmanager.h"
+#include "pluginmanager.h"
 #include "tabwidget.h"
 #include "webview.h"
 
@@ -262,6 +263,8 @@ void WebView::loadFinished()
     if (100 != m_progress) {
         qWarning() << "Received finished signal while progress is still:" << progress()
                    << "Url:" << url();
+    } else {
+        BrowserApplication::pluginManager()->loadFinished(m_page);
     }
     m_progress = 0;
 }
