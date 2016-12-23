@@ -46,6 +46,7 @@
 #include "cookiejar.h"
 #include "history.h"
 #include "networkaccessmanager.h"
+#include "pluginmanager.h"
 #include "webview.h"
 
 #include <QtCore/QSettings>
@@ -268,10 +269,13 @@ void SettingsDialog::saveToSettings()
     settings.setValue(QLatin1String("password"), proxyPassword->text());
     settings.endGroup();
 
+    BrowserApplication::pluginManager()->saveSettings();
+
     BrowserApplication::instance()->loadSettings();
     BrowserApplication::networkAccessManager()->loadSettings();
     BrowserApplication::cookieJar()->loadSettings();
     BrowserApplication::historyManager()->loadSettings();
+    BrowserApplication::pluginManager()->loadSettings();
 }
 
 void SettingsDialog::accept()

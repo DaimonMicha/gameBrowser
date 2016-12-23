@@ -5,10 +5,10 @@
 <style type="text/css">
 
 #accountPlugin {
-    position: absolute;
+    position: fixed;
     float: left;
     width: 150px;
-    height: 95%;
+    /*height: 95%;*/
     top: 13px;
     padding-left: 2px;
     text-align: left;

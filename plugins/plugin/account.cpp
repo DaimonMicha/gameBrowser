@@ -3,13 +3,15 @@
 #include <QUrl>
 #include <QDateTime>
 #include <QWebFrame>
+#include <QNetworkReply>
 
 #include <QDebug>
 
 
 Account::Account(const QString cookie, QObject *parent) :
     QObject(parent),
-    m_cookieValue(cookie)
+    m_cookieValue(cookie),
+    s_networkManager(0)
 {
     m_config.bot = false;
 }
@@ -29,9 +31,16 @@ void Account::loadFinished(QWebPage* page)
 {
     QWebFrame* mainFrame = page->mainFrame();
     QUrl url = mainFrame->url();
-    //QString host = url.host();
     QStringList paths = url.path().split("/",QString::SkipEmptyParts);
 
     if(!paths.count()) return; // nothing to do, login evtl?
 
+}
+
+void Account::replyFinished(QNetworkReply* reply)
+{
+    QUrl url = reply->url();
+    QStringList paths = url.path().split("/",QString::SkipEmptyParts);
+
+    if(!paths.count()) return; // nothing to do, login evtl?
 }

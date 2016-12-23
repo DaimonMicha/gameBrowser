@@ -694,7 +694,7 @@ void BrowserMainWindow::slotPrivateBrowsing()
 
 void BrowserMainWindow::closeEvent(QCloseEvent *event)
 {
-    if (m_tabWidget->count() > 1) {
+    if (m_tabWidget->count() > 4) {
         int ret = QMessageBox::warning(this, QString(),
                            tr("Are you sure you want to close the window?"
                               "  There are %1 tabs open").arg(m_tabWidget->count()),

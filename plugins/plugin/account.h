@@ -25,6 +25,7 @@ public:
     Q_INVOKABLE QString cookieValue() const { return(m_cookieValue); }
 
     void loadFinished(QWebPage*);
+    void replyFinished(QNetworkReply*);
 
 signals:
 
@@ -34,6 +35,7 @@ public slots:
 private:
     botConfig               m_config;
     QString                 m_cookieValue;
+    QNetworkAccessManager*  s_networkManager;
 };
 
 #endif // ACCOUNT_H

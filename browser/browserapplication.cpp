@@ -212,18 +212,24 @@ void BrowserApplication::postLaunch()
 
     setWindowIcon(QIcon(QLatin1String(":browser.svg")));
 
+    BrowserApplication::pluginManager()->loadPlugins();
+
     loadSettings();
 
     // newMainWindow() needs to be called in main() for this to happen
     if (m_mainWindows.count() > 0) {
         QStringList args = QCoreApplication::arguments();
-        if (args.count() > 1)
+        if(args.count() > 1) {
             mainWindow()->loadPage(args.last());
-        else
-            mainWindow()->slotHome();
+        } else {
+            if(canRestoreSession()) {
+                restoreLastSession();
+            } else {
+                mainWindow()->slotHome();
+            }
+        }
     }
     BrowserApplication::historyManager();
-    BrowserApplication::pluginManager()->loadPlugins();
 }
 
 void BrowserApplication::loadSettings()

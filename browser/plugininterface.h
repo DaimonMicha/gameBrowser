@@ -25,6 +25,7 @@ public:
     virtual bool isMyUrl(const QUrl &) const { return(false); }
     virtual QWidget* settingsWidget() const { return(new QWidget()); }
 
+    virtual void initPlugin() {}
     virtual void loadSettings(QSettings &) {}
     virtual void saveSettings(QSettings &) {}
 

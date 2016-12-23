@@ -5,7 +5,7 @@
 #include "account.h"
 
 
-class Plugin  : public QObject, public PluginInterface
+class Plugin : public QObject, public PluginInterface
 {
     Q_OBJECT
     Q_PLUGIN_METADATA(IID "de.daimonnetwork.gameBrowser.PluginInterface" FILE "plugin.json")
@@ -18,6 +18,7 @@ public:
     QWidget* settingsWidget() const { return(new QWidget()); }
     bool isMyUrl(const QUrl &) const;
 
+    void initPlugin();
     void loadSettings(QSettings &);
     void saveSettings(QSettings &);
 
