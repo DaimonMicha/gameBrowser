@@ -171,7 +171,7 @@ void Plugin::replyFinished(QNetworkReply* reply)
     logString.append("  "+name()+"::replyFinished (" + url.path());
     logString.append(")");
     QByteArray post = reply->property("postData").toByteArray();
-    if(post.length() > 0) logString.append(post);
+    if(post.length() > 0) logString.append(", POST:'"+post+"'");
     qDebug() << logString;
 }
 
