@@ -1,0 +1,90 @@
+{
+    "v1": {
+        "name": "VillageOne",
+        "title": "Tarant"
+    },
+    "tp1": {
+        "name": "TradingPostOne",
+        "title": "Grand"
+    },
+    "h3": {
+        "name": "HarbourThree",
+        "title": "Sedwich"
+    },
+    "hs": {
+        "name": "CapitalCity",
+        "title": "Endalain"
+    },
+    "cf1": {
+        "name": "CoastalFortressOne",
+        "title": "Asgal"
+    },
+    "cf2": {
+        "name": "CoastalFortressTwo",
+        "title": "Gastain"
+    },
+    "c1": {
+        "name": "CityOne",
+        "title": "Alcran"
+    },
+    "v2": {
+        "name": "VillageTwo",
+        "title": "Hatwig"
+    },
+    "tp2": {
+        "name": "TradingPostTwo",
+        "title": "Talmet"
+    },
+    "h1": {
+        "name": "HarbourOne",
+        "title": "Waile"
+    },
+    "h2": {
+        "name": "HarbourTwo",
+        "title": "Alvan"
+    },
+    "tp4": {
+        "name": "TradingPostFour",
+        "title": "Milley"
+    },
+    "v4": {
+        "name": "VillageFour",
+        "title": "Jarow"
+    },
+    "f2": {
+        "name": "FortressTwo",
+        "title": "Segur"
+    },
+    "tp3": {
+        "name": "TradingPostThree",
+        "title": "Brant"
+    },
+    "v3": {
+        "name": "VillageThree",
+        "title": "Ramstill"
+    },
+    "f1": {
+        "name": "FortressOne",
+        "title": "Thulgar"
+    },
+    "gt": {
+        "name": "GhostTown",
+        "title": "Talfour"
+    }
+}
+/*
+    <div id="h1tp3" class="path"></div>
+    <div id="tp2h1" class="path"></div>
+    <div id="hstp2" class="path"></div>
+    <div id="tp1hs" class="path"></div>
+    <div id="v1tp1" class="path"></div>
+    <div id="tp1gt" class="path"></div>
+    <div id="h3tp1" class="path"></div>
+    <div id="hscf1" class="path"></div>
+    <div id="gtc1" class="path"></div>
+    <div id="c1cf2" class="path"></div>
+    <div id="tp2v2" class="path"></div>
+    <div id="v3tp3" class="path"></div>
+    <div id="tp3f1" class="path"></div>
+    <div id="c1tp3_longboat" class="path"></div>
+*/

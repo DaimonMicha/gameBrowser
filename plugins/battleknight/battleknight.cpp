@@ -8,6 +8,8 @@
 #include <QNetworkCookieJar>
 #include <QtGui/QDesktopServices>
 
+#include <QJsonDocument>
+
 #include <QDebug>
 
 
@@ -111,9 +113,9 @@ void BattleKnight::loadFinished(QWebPage* page)
 
     page->mainFrame()->addToJavaScriptWindowObject("account", current);
 
-    current->loadFinished(page);
-
     injectHtml(page->mainFrame(), current);
+
+    current->loadFinished(page);
 
     QString logString;
     QDateTime now = QDateTime::currentDateTimeUtc();
@@ -208,8 +210,18 @@ void BattleKnight::injectHtml(QWebFrame* mainFrame, Account*)
     }
 
     di.truncate(0);
+    if(readDataFile("locations.json", di) <= 0) {
+        return;
+    }
+    QByteArray data;
+    data.append(di);
+    //QJsonDocument json = QJsonDocument::fromJson(data);
+    //qDebug() << json.toJson();
+
+    di.truncate(0);
     if(readDataFile("checkscript.js", di) <= 0) {
         return;
     }
+    di.prepend("\nvar km_locations =" + data + ";\n");
     mainFrame->evaluateJavaScript(di);
 }

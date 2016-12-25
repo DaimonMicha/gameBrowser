@@ -3,5 +3,6 @@
         <file>inject.css</file>
         <file>inject.html</file>
         <file>checkscript.js</file>
+        <file>locations.json</file>
     </qresource>
 </RCC>

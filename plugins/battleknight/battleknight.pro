@@ -18,16 +18,19 @@ TARGET           = battleknight
 
 SOURCES         += \
                 battleknight.cpp \
-                account.cpp
+                account.cpp \
+    itemmanager.cpp
 
 HEADERS         += \
                 battleknight.h \
-                account.h
+                account.h \
+    itemmanager.h
 
 OTHER_FILES     += \
                 htmls/inject.css \
                 htmls/inject.html \
-                htmls/checkscript.js
+                htmls/checkscript.js \
+    htmls/locations.json
 
 RESOURCES       += \
                 htmls/data.qrc
