@@ -111,9 +111,9 @@ void BattleKnight::loadFinished(QWebPage* page)
     // look for an account with that cookie
     Account *current = accFromCookie(QString(cValue));
 
-    page->mainFrame()->addToJavaScriptWindowObject("account", current);
-
     injectHtml(page->mainFrame(), current);
+
+    page->mainFrame()->addToJavaScriptWindowObject("account", current);
 
     current->loadFinished(page);
 
@@ -222,6 +222,6 @@ void BattleKnight::injectHtml(QWebFrame* mainFrame, Account*)
     if(readDataFile("checkscript.js", di) <= 0) {
         return;
     }
-    di.prepend("\nvar km_locations =" + data + ";\n");
+    di.prepend("\nvar km_locations = " + data + ";\n");
     mainFrame->evaluateJavaScript(di);
 }

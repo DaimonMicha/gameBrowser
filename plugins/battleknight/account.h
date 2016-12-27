@@ -72,7 +72,9 @@ public:
 */
 
 class QTimerEvent;
+class PlayerManager;
 class ItemManager;
+class ReportManager;
 
 class Account : public QObject
 {
@@ -99,6 +101,7 @@ signals:
 
 public slots:
     void toggle(const QString option = "account", const bool on = false);
+    void setPlayer(const QVariant data);
 
 private slots:
     void reasonCleaner();
@@ -111,7 +114,9 @@ private:
     int                     m_missionsTimer;
     int                     m_gmTimer;
 
+    PlayerManager*          s_playerManager;
     ItemManager*            s_itemManager;
+    ReportManager*          s_reportManager;
     accPlayer               m_accPlayer;
     QVariantMap             m_player;
 };

@@ -17,7 +17,13 @@
     },
     "cf1": {
         "name": "CoastalFortressOne",
-        "title": "Asgal"
+        "title": "Asgal",
+        "tax": 44,
+        "missions": [
+            "BurningVillage",
+            "AdversaryBridgehead",
+            "Coast"
+        ]
     },
     "cf2": {
         "name": "CoastalFortressTwo",
@@ -69,7 +75,14 @@
     },
     "gt": {
         "name": "GhostTown",
-        "title": "Talfour"
+        "title": "Talfour",
+        "missions": [
+            "WitchForest",
+            "DeadLand",
+            "Volcano",
+            "CastleRuin",
+            "DragonLair"
+        ]
     }
 }
 /*

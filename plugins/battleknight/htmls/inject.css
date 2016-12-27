@@ -35,7 +35,7 @@
 .kmHeader a:hover, #accountPlugin label:hover {
     color: red;
 }
-#knightName {
+#km_knightName {
     text-align: right;
     font-size: 1.2em;
     font-weight: bold;
