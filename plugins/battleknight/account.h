@@ -5,6 +5,9 @@
 #include <QWebPage>
 #include <QVariant>
 
+#include "playermanager.h"
+#include "itemmanager.h"
+#include "reportmanager.h"
 
 class botConfig
 {
@@ -32,7 +35,7 @@ public:
 };
 
 /*
- * Orte in BattleKnight
+ * Orte in BattleKnight (locations.json)
  * id   location            name
  * _________________________________
  *
@@ -79,17 +82,19 @@ class ReportManager;
 class Account : public QObject
 {
     Q_OBJECT
+
 public:
     Account(const QString cookie, QObject *parent = 0);
 
-    Q_INVOKABLE bool isActive(const QString option = "account") const {
-        if(option == "account") return(m_config.bot);
+    Q_INVOKABLE bool isActive(const QString option = "enableAccount") const {
+        if(m_botOptions.contains(option)) return(m_botOptions.value(option));
         return(false);
     }
     Q_INVOKABLE QString cookieValue() const { return(m_cookieValue); }
     Q_INVOKABLE void setProfile(const QVariant data);
     Q_INVOKABLE QString profile(const QString key) const;
-    Q_INVOKABLE void setItem(const QVariant data);
+    Q_INVOKABLE QString player(const QString id, const QString key) const;
+    Q_INVOKABLE QString reports(const int count, const QString type) const;
 
     void loadFinished(QWebPage*);
     void replyFinished(QNetworkReply*);
@@ -100,14 +105,20 @@ protected:
 signals:
 
 public slots:
-    void toggle(const QString option = "account", const bool on = false);
-    void setPlayer(const QVariant data);
+    void toggle(const QString option = "enableAccount", const bool soll = false);
+    void setPlayer(const QVariant data) {
+        s_playerManager->checkPlayer(data);
+    }
+    void setItem(const QVariant data) {
+        s_itemManager->checkItem(data);
+    }
 
 private slots:
     void reasonCleaner();
 
 private:
-    botConfig               m_config;
+    //botConfig               m_config;
+    QMap<QString, bool>     m_botOptions;
     QString                 m_cookieValue;
     QNetworkAccessManager*  s_networkManager;
     int                     m_cleanTimer;
@@ -117,7 +128,7 @@ private:
     PlayerManager*          s_playerManager;
     ItemManager*            s_itemManager;
     ReportManager*          s_reportManager;
-    accPlayer               m_accPlayer;
+    int                     m_accPlayer;
     QVariantMap             m_player;
 };
 

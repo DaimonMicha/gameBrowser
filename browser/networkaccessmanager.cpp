@@ -90,6 +90,10 @@ QNetworkReply* NetworkAccessManager::createRequest(Operation op, const QNetworkR
     // this is a temporary hack until we properly use the pipelining flags from QtWebkit
     // pipeline everything! :)
     request.setAttribute(QNetworkRequest::HttpPipeliningAllowedAttribute, true);
+    //
+    // setting an appropriate user-agent string
+    // i.e. from http://www.useragentstring.com/pages/useragentstring.php
+    //
     QNetworkReply* reply = QNetworkAccessManager::createRequest(op, request, outgoingData);
     connect(reply, SIGNAL(readyRead()), this, SLOT(readReplyInternal()));
     if(outgoingData && request.hasRawHeader("Content-Length")) {

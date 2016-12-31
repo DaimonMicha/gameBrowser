@@ -1,19 +1,42 @@
 {
     "v1": {
         "name": "VillageOne",
-        "title": "Tarant"
+        "title": "Tarant",
+        "tax": 41,
+        "missions": [
+            "BanditLair",
+            "Cave",
+            "StoneCircle",
+            "Coast"
+        ]
     },
     "tp1": {
         "name": "TradingPostOne",
-        "title": "Grand"
+        "title": "Grand",
+        "tax": 36,
+        "missions": [
+            "OldOak",
+            "StoneCircle"
+        ]
     },
     "h3": {
         "name": "HarbourThree",
-        "title": "Sedwich"
+        "title": "Sedwich",
+        "tax": 41,
+        "missions": [
+            "GroundedShip",
+            "Harbour",
+            "Lighthouse"
+        ]
     },
     "hs": {
         "name": "CapitalCity",
-        "title": "Endalain"
+        "title": "Endalain",
+        "tax": 35,
+        "missions": [
+            "VictoryColumn",
+            "MysticalTower"
+        ]
     },
     "cf1": {
         "name": "CoastalFortressOne",
@@ -27,51 +50,125 @@
     },
     "cf2": {
         "name": "CoastalFortressTwo",
-        "title": "Gastain"
+        "title": "Gastain",
+        "tax": 45,
+        "missions": [
+            "Watchtower",
+            "BurningVillage",
+            "AdversaryBridgehead",
+            "GroundedShip"
+        ]
     },
     "c1": {
         "name": "CityOne",
-        "title": "Alcran"
+        "title": "Alcran",
+        "tax": 40,
+        "missions": [
+            "Tabour",
+            "Bridge",
+            "Coast"
+        ]
     },
     "v2": {
         "name": "VillageTwo",
-        "title": "Hatwig"
+        "title": "Hatwig",
+        "tax": 37,
+        "missions": [
+            "Bridge",
+            "Swamp",
+            "Coast",
+            "Forest"
+        ]
     },
     "tp2": {
         "name": "TradingPostTwo",
-        "title": "Talmet"
+        "title": "Talmet",
+        "tax": 34,
+        "missions": [
+            "Cave",
+            "Forest"
+        ]
     },
     "h1": {
         "name": "HarbourOne",
-        "title": "Waile"
+        "title": "Waile",
+        "tax": 36,
+        "missions": [
+            "GroundedShip",
+            "Harbour",
+            "Lighthouse"
+        ]
     },
     "h2": {
         "name": "HarbourTwo",
-        "title": "Alvan"
+        "title": "Alvan",
+        "tax": 39,
+        "missions": [
+            "Bay",
+            "Harbour",
+            "Cliffs"
+        ]
     },
     "tp4": {
         "name": "TradingPostFour",
-        "title": "Milley"
+        "title": "Milley",
+        "tax": 33,
+        "missions": [
+            "OldOak",
+            "Mountain"
+        ]
     },
     "v4": {
         "name": "VillageFour",
-        "title": "Jarow"
+        "title": "Jarow",
+        "tax": 42,
+        "missions": [
+            "Tabour",
+            "CastleRuin",
+            "Swamp",
+            "Cliffs"
+        ]
     },
     "f2": {
         "name": "FortressTwo",
-        "title": "Segur"
+        "title": "Segur",
+        "tax": 48,
+        "missions": [
+            "Watchtower",
+            "BurningVillage",
+            "AdversaryBridgehead"
+        ]
     },
     "tp3": {
         "name": "TradingPostThree",
-        "title": "Brant"
+        "title": "Brant",
+        "tax": 38,
+        "missions": [
+            "Mountain",
+            "Volcano"
+        ]
     },
     "v3": {
         "name": "VillageThree",
-        "title": "Ramstill"
+        "title": "Ramstill",
+        "tax": 43,
+        "missions": [
+            "ArkanianHills",
+            "Mountain",
+            "Cave",
+            "Coast"
+        ]
     },
     "f1": {
         "name": "FortressOne",
-        "title": "Thulgar"
+        "title": "Thulgar",
+        "tax": 46,
+        "missions": [
+            "BurningVillage",
+            "AdversaryBridgehead",
+            "Cliffs",
+            "Forest"
+        ]
     },
     "gt": {
         "name": "GhostTown",

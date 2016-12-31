@@ -1,8 +1,5 @@
 #include "account.h"
 #include "battleknight.h"
-#include "playermanager.h"
-#include "itemmanager.h"
-#include "reportmanager.h"
 
 #include <QUrl>
 #include <QUrlQuery>
@@ -28,24 +25,29 @@ Account::Account(const QString cookie, QObject *parent) :
     s_itemManager(new ItemManager),
     s_reportManager(new ReportManager)
 {
-    m_config.bot = false;
     m_player.insert("missionPoints",QVariant(0));
     m_player.insert("gmPoints",QVariant(0));
+    m_accPlayer = 0;
     m_missionsTimer = startTimer(60 * 60 * 1000);
     m_gmTimer = startTimer(60 * 60 * 1000);
     connect(s_reportManager, SIGNAL(playerCheck(QVariant)),
             this, SLOT(setPlayer(QVariant)));
 }
 
-void Account::toggle(const QString option, const bool on)
+void Account::toggle(const QString option, const bool soll)
 {
-    if(option == "account") {
-        m_config.bot = on;
-        if(on) {
+    bool ist = isActive(option);
+
+    if(option == "enableAccount") {
+        if(soll) {
         } else {
         }
     }
-    qDebug() << "Account::toggle:" << option << on;
+
+    if(ist != soll) {
+        m_botOptions.insert(option, soll);
+    }
+    qDebug() << "Account::toggle:" << option << soll;
 }
 
 void Account::timerEvent(QTimerEvent *event)
@@ -65,7 +67,7 @@ void Account::timerEvent(QTimerEvent *event)
                 p += 5;
                 if(p < 125) m_player.insert("missionPoints", p);
             }
-            qDebug() << "\n\tadjust missionPoints:" << m_player.value("missionPoints").toInt();
+            //qDebug() << "\n\tadjust missionPoints:" << m_player.value("missionPoints").toInt();
         }
     } else if(event->timerId() == m_gmTimer) {
         // adjust gmPoints
@@ -82,8 +84,6 @@ void Account::reasonCleaner()
     m_player.remove("waitDuration");
     m_player.remove("waitReason");
     m_player.remove("waitTime");
-
-    //qDebug() << "reasonCleaner...";
 }
 
 void Account::setProfile(const QVariant data)
@@ -93,7 +93,27 @@ void Account::setProfile(const QVariant data)
     QJsonDocument json = QJsonDocument::fromVariant(data);
     QJsonObject o = json.object();
 
+    if(o.contains("knight_id") && m_accPlayer == 0) {
+        m_accPlayer = o.value("knight_id").toInt();
+    }
+
     foreach(QString key, o.keys()) {
+        // adjust m_gmTimer
+        if(key == "gmPoints" && m_player.contains("gmPoints")) {
+            if(o.value(key).toVariant() != m_player.value(key)) {
+                // adjust m_gmTimer
+                killTimer(m_gmTimer);
+                qDebug() << "\tadjust m_gmTimer...";
+                m_gmTimer = startTimer(60 * 60 * 1000);
+            }
+        } else if(key == "missionPoints" && m_player.contains("missionPoints")) {
+            if(o.value(key).toVariant() != m_player.value(key)) {
+                // adjust m_missionsTimer
+                killTimer(m_missionsTimer);
+                qDebug() << "\tadjust m_missionsTimer...";
+                m_missionsTimer = startTimer(60 * 60 * 1000);
+            }
+        }
         m_player.insert(key,o.value(key).toVariant());
     }
 
@@ -115,14 +135,23 @@ QString Account::profile(const QString key) const
     return(ret);
 }
 
-void Account::setItem(const QVariant data)
+QString Account::player(const QString id, const QString key) const
 {
-    s_itemManager->checkItem(data);
+    QString ret;
+
+    QVariantMap data = s_playerManager->playerData(id.toInt()).toMap();
+    if(data.contains(key)) {
+        ret = data.value(key).toString();
+    }
+
+    return(ret);
 }
 
-void Account::setPlayer(const QVariant data)
+QString Account::reports(const int count, const QString type) const
 {
-    s_playerManager->checkPlayer(data);
+    QVariant m = s_reportManager->lastReport(count, type);
+    QJsonDocument ret = QJsonDocument::fromVariant(m);
+    return(ret.toJson());
 }
 
 void Account::loadFinished(QWebPage* page)
@@ -135,11 +164,21 @@ void Account::loadFinished(QWebPage* page)
 
     if(!s_networkManager) s_networkManager = page->networkAccessManager();
 
-    mainFrame->evaluateJavaScript("var km_profile = new kmProfile(); function checkProfile(){ km_profile.checkProfile(); } window.setInterval(checkProfile, 500);");
+    BattleKnight* plugin = qobject_cast<BattleKnight *>(parent());
+    if(plugin) {
+        QString script;
+        plugin->readDataFile("locations.json",script);
+        mainFrame->evaluateJavaScript(script.prepend("var km_locations=").append(";"));
+        plugin->readDataFile("checkscript.js",script);
+        mainFrame->evaluateJavaScript(script);
+    } else {
+        return;
+    }
 
     if(paths.at(0) == QString("user")) {
         if(paths.count() == 1) {
             // read inventory
+            // put it in the game-script!
             QWebElementCollection items = mainFrame->findAllElements(".inventoryItem");
             foreach(QWebElement item, items) {
                 mainFrame->evaluateJavaScript("km_profile.getItemData('"+item.attribute("id")+"');");
@@ -205,7 +244,7 @@ void Account::loadFinished(QWebPage* page)
                 if(!m_player.contains("waitReason") && m_player.value("contentTitle").toString() == QString("Duell")) {
                     m_player.insert("waitReason",QVariant("duel"));
                     m_cleanTimer = startTimer(m_player.value("waitTime").toInt()*1000+100);
-                    // Kampfbericht parsen
+                    // Kampfbericht parsen (zeitversetzt!)
                 }
             }
         }
@@ -224,6 +263,7 @@ void Account::replyFinished(QNetworkReply* reply)
     if(!s_networkManager) s_networkManager = reply->manager();
 
     if(paths.at(0) == QString("ajax")) {
+        if(paths.count() < 3) return;
         if(paths.at(1) == QString("ajax")) {
             if(paths.at(2) == QString("getInventory")) {
                 QJsonDocument json = QJsonDocument::fromJson(reply->property("getData").toByteArray());
@@ -231,6 +271,12 @@ void Account::replyFinished(QNetworkReply* reply)
                 for(int i = 0; i < items.size(); ++i) {
                     setItem(items[i].toObject());
                 }
+            } else if(paths.at(2) == QString("buyItem")) {
+                qDebug() << "buyItem:" << reply->property("getData").toByteArray();
+            } else if(paths.at(2) == QString("sellItem")) {
+                qDebug() << "sellItem:" << reply->property("getData").toByteArray();
+            } else if(paths.at(2) == QString("placeItem")) {
+                qDebug() << "placeItem:" << reply->property("getData").toByteArray();
             }
         } else if(paths.at(1) == QString("duel")) {
             if(paths.at(2) == QString("proposals")) {
@@ -241,6 +287,15 @@ void Account::replyFinished(QNetworkReply* reply)
                     s_playerManager->checkPlayer(doc.toVariant());
                 }
             }
+        } else if(paths.at(1) == QString("user")) {
+            if(paths.at(2) == QString("changeZones")) {
+                // paths.at(3)
+                // {"hit1":"2","hit2":"7","hit3":"4","hit4":"4","hit5":"9","shield1":"2","shield2":"5","shield3":"4","shield4":"5","shield5":"4"}
+            }
+        }
+    } else if(paths.at(0) == QString("clanwar")) {
+        if(paths.count() > 1 && paths.at(1) == QString("battle")) {
+            qDebug() << "clanwar/battle:" << reply->property("getData").toByteArray();
         }
     } else if(paths.at(0) == QString("world")) {
         if(paths.count() > 1 && paths.at(1) == QString("location")) {

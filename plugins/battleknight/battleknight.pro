@@ -33,6 +33,7 @@ HEADERS         += \
 OTHER_FILES     += \
                 htmls/inject.css \
                 htmls/inject.html \
+                htmls/gamescript.js \
                 htmls/checkscript.js \
                 htmls/locations.json
 

@@ -13,16 +13,27 @@
     text-align: left;
     font-family: "Ubuntu Condensed", Arial, sans-serif;
     font-size: 1.2em;
+}
+.kmTopic {
+    background-color: rgba(0, 0, 0, 0.45);
+    border: 3px solid grey;
+    margin-bottom: 10px;
+}
+.kmTopic table {
+    width: 100%;
     color: white;
-    /*border: 1px solid yellow;*/
 }
-#accountPlugin td {
+.kmTopic th {
+    padding-top: 5px;
+    padding-bottom: 10px;
+}
+.kmTopic tr > th:first-child  {
+    width: 25px;
+}
+.kmTopic td {
     height: 25px;
-}
-.klickMeisterLogo {
-    text-align: center;
-    font-size: 1.4em;
-    font-weight: bold;
+    padding-left: 4px;
+    padding-right: 4px;
 }
 .kmHeader, .kmHeader a {
     font-size: 1.2em;
@@ -32,21 +43,38 @@
     padding-left: 10px;
     color: white;
 }
-.kmHeader a:hover, #accountPlugin label:hover {
+.kmHeader a:hover, .kmHeader label:hover {
     color: red;
+}
+.kmTopic .hoverTable:hover {
+    background-color: rgba(241, 236, 215, 0.15);
+}
+.duelIcon {
+    display: block;
+    height: 22px;
+    width: 22px;
+    margin: 0 auto 2px;
+}
+.sbox-window-kmZones {
+    background: url(../img/user/bg_targetzones.jpg) no-repeat;
+}
+#klickMeisterLogo {
+    text-align: left;
+    font-size: 1.3em;
+    font-weight: bold;
 }
 #km_knightName {
     text-align: right;
     font-size: 1.2em;
     font-weight: bold;
-    padding-right: 2px;
+    padding-right: 5px;
+    cursor: default;
 }
-#opponents {
-    position: absolute;
-    width: 140px;
-    top: 300px;
-    background-color: rgba(0, 0, 0, 0.45);
-    border: 3px solid grey;
+#duelTable tbody tr:hover {
+    background-color: rgba(241, 236, 215, 0.15);
 }
-
+#duelTable a.specialKM {
+    color: white;
+    cursor: pointer;
+}
 </style>

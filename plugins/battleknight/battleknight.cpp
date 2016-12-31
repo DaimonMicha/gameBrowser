@@ -1,5 +1,6 @@
 #include "battleknight.h"
 
+#include <QRegExp>
 #include <QFile>
 #include <QTime>
 #include <QWebFrame>
@@ -12,6 +13,16 @@
 
 #include <QDebug>
 
+
+
+
+BattleKnight::~BattleKnight()
+{
+    if(m_accounts.count() > 0) foreach(Account *account, m_accounts) {
+        delete(account);
+    }
+    Q_CLEANUP_RESOURCE(data);
+}
 
 void BattleKnight::initPlugin()
 {
@@ -37,16 +48,16 @@ void BattleKnight::initPlugin()
                ;
 }
 
-BattleKnight::~BattleKnight()
-{
-    Q_CLEANUP_RESOURCE(data);
-}
-
 bool BattleKnight::isMyUrl(const QUrl &url) const
 {
     QString host = url.host();
 
     foreach(QString pattern, m_settings.urlPatterns) {
+
+        QRegExp rx(pattern);
+        rx.setPatternSyntax(QRegExp::Wildcard);
+        if(rx.exactMatch(host)) return(true);
+
         if(host.endsWith(pattern)) return(true);
     }
 
@@ -84,15 +95,15 @@ void BattleKnight::saveSettings(QSettings& settings)
 Account *BattleKnight::accFromCookie(const QString cValue)
 {
     Account *ret = NULL;
-    if(m_accounts.count() > 0) foreach (Account *account, m_accounts) {
+    if(m_accounts.count() > 0) foreach(Account *account, m_accounts) {
         if(account->cookieValue() == cValue) {
             ret = account;
             break;
         }
     }
     if(ret == NULL) {
-        ret = new Account(cValue);
-        ret->toggle("account", m_settings.enabled);
+        ret = new Account(cValue, this);
+        ret->toggle("enableAccount", m_settings.enabled);
         m_accounts.append(ret);
     }
     return(ret);
@@ -165,6 +176,7 @@ int BattleKnight::readDataFile(const QString file, QString& data)
     if(inject.isOpen()) {
         QByteArray bytes = inject.readAll();
         inject.close();
+        data.truncate(0);
         data.append(bytes);
         return(data.length());
     }
@@ -192,36 +204,18 @@ void BattleKnight::injectHtml(QWebFrame* mainFrame, Account*)
         div.removeFromDocument();
     }
 
-    di.truncate(0);
     if(readDataFile("inject.css", di) <= 0) {
         return;
     }
     body.appendInside(di);
 
-    di.truncate(0);
     if(readDataFile("inject.html", di) <= 0) {
         return;
     }
     body.appendInside(di);
 
-    if(m_settings.enabled) {
-        QWebElement checker = body.findFirst("#clickChecker");
-        if(!checker.isNull()) checker.setAttribute("checked", "checked");
-    }
-
-    di.truncate(0);
-    if(readDataFile("locations.json", di) <= 0) {
+    if(readDataFile("gamescript.js", di) <= 0) {
         return;
     }
-    QByteArray data;
-    data.append(di);
-    //QJsonDocument json = QJsonDocument::fromJson(data);
-    //qDebug() << json.toJson();
-
-    di.truncate(0);
-    if(readDataFile("checkscript.js", di) <= 0) {
-        return;
-    }
-    di.prepend("\nvar km_locations = " + data + ";\n");
     mainFrame->evaluateJavaScript(di);
 }

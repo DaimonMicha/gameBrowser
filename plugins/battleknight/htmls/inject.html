@@ -1,20 +1,76 @@
 
 
 <div id="accountPlugin">
-    <div id="account">
+    <div id="account" class="kmTopic">
         <table id="accountTable" width="100%">
-            <tbody>
+            <thead>
                 <tr>
-                    <td align="center"><input id="clickChecker" type="checkbox" title="mach mich an!" onClick="account.toggle('account', this.checked);"></input></td>
-                    <td class="klickMeisterLogo"><label for="clickChecker" title="mach mich an!">Klick Meister</label></td>
+                    <th class="kmHeader"><input class="kmChecker"  id="enableAccount" type="checkbox" title="mach mich an!"></input></th>
+                    <th id="klickMeisterLogo" class="kmHeader"><label for="enableAccount" title="mach mich an!">Klick Meister</label></th>
                 </tr>
+            </thead>
+            <tbody>
                 <tr><td colspan="2" id="km_knightName"></td></tr>
                 <tr><td colspan="2"></td></tr>
-                <tr><td></td><td id="km_location" align="center" class="kmHeader"></td></tr>
-                <tr><td id="km_missionPoints" align="right"></td><td style="padding-left: 4px;">Missionspunkte</td></tr>
-                <tr><td id="km_gmPoints" align="right"></td><td style="padding-left: 4px;">GM-Punkte</td></tr>
+                <tr><td></td><td class="kmHeader"><span id="km_location"></span></td></tr>
+                <tr><td id="km_missionPoints" align="right"></td><td>Missionspunkte</td></tr>
             </tbody>
         </table> <!-- #accountTable -->
     </div> <!-- #account -->
+    <div id="kmGM" class="kmTopic">
+        <table id="gmTable">
+            <thead>
+                <tr>
+                    <th class="kmHeader"><input class="kmChecker" id="enableGM" type="checkbox" title="darf ich automatisch GM machen?"></input></th>
+                    <th class="kmHeader"><label for="enableGM" title="darf ich automatisch GM machen?">GM</label></th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr><td id="km_gmPoints" align="right"></td><td>GM-Punkte</td></tr>
+            </tbody>
+        </table> <!-- #duelTable -->
+    </div> <!-- #duels -->
+    <div id="duels" class="kmTopic">
+        <table id="duelTable">
+            <thead>
+                <tr>
+                    <th class="kmHeader"><input class="kmChecker" id="enableDuels" type="checkbox" title="darf ich automatisch Duelle machen?"></input></th>
+                    <th class="kmHeader"><label for="enableDuels" title="darf ich automatisch Duelle machen?">Duelle</label></th>
+                </tr>
+            </thead>
+            <tbody>
+            </tbody>
+        </table> <!-- #duelTable -->
+    </div> <!-- #duels -->
 </div> <!-- #accountPlugin -->
 
+<div id="km_squeezeContent" class="nodisplay">
+
+        <div id="modal_kmKnight" class="sbox-medium missionSqueeze">
+          <div class="modalWrapper">
+            <div class="sbox-short-header">
+              <div class="missionName">
+                <h3>RitterName</h3>
+              </div>
+            </div>
+            <div id="devGoodMissions" class="goodMission">
+              <h2>Gute Mission</h2>
+              <ul><li><a class="devSmall specialButton disabledSpecialBtn toolTip" onclick="chooseMission('small', 'GroundedShip', 'Good', this);"><span>Klein: 20 MP</span></a></li><li><a class="devMedium specialButton disabledSpecialBtn toolTip" onclick="chooseMission('medium', 'GroundedShip', 'Good', this);"><span>Mittel: 40 MP</span></a></li><li><a class="devLarge specialButton disabledSpecialBtn toolTip" onclick="chooseMission('large', 'GroundedShip', 'Good', this);"><span>Gro&szlig;: 60 MP</span></a></li></ul>
+              <div class="karmaSymbol">
+              <!-- end #karmaSymbol-->
+              </div><!-- end #goodMission-->
+            </div>
+
+            <div class="mission h3StrandedShip">
+            </div>
+
+            <div id="devEvilMissions" class="evilMission">
+              <h2>B&ouml;se Mission</h2>
+              <ul><li><a class="devSmall specialButton disabledSpecialBtn toolTip" onclick="chooseMission('small', 'GroundedShip', 'Evil', this);"><span>Klein: 20 MP</span></a></li><li><a class="devMedium specialButton disabledSpecialBtn toolTip" onclick="chooseMission('medium', 'GroundedShip', 'Evil', this);"><span>Mittel: 40 MP</span></a></li><li><a class="devLarge specialButton disabledSpecialBtn toolTip" onclick="chooseMission('large', 'GroundedShip', 'Evil', this);"><span>Gro&szlig;: 60 MP</span></a></li></ul>
+              <div class="karmaSymbol">
+              <!-- end #karmaSymbol-->
+              </div><!-- end #goodMission-->
+            </div>
+          </div>
+        </div>
+</div>

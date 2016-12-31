@@ -25,9 +25,10 @@ public:
     void replyFinished(QNetworkReply*);
     void loadFinished(QWebPage*);
 
+    int readDataFile(const QString file, QString& data);
+
 private:
     Account *accFromCookie(const QString);
-    int readDataFile(const QString file, QString& data);
     void injectHtml(QWebFrame*, Account*);
 
 private:

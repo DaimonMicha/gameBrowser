@@ -15,6 +15,10 @@ public:
     explicit PlayerManager(QObject *parent = 0);
 
     void checkPlayer(const QVariant data);
+    QVariant playerData(const int id) const;
+
+    int playersRow(int id) const;
+    int createRow(int id) const;
 
 signals:
 
