@@ -3,13 +3,8 @@
 
 #include <QObject>
 #include <QWebPage>
+#include <QVariant>
 
-
-class botConfig
-{
-public:
-    bool bot;
-};
 
 
 class Account : public QObject
@@ -18,22 +13,21 @@ class Account : public QObject
 public:
     Account(const QString cookie, QObject *parent = 0);
 
-    Q_INVOKABLE bool isActive(const QString option = "account") const {
-        if(option == "account") return(m_config.bot);
+    Q_INVOKABLE QString cookieValue() const { return(m_cookieValue); }
+    Q_INVOKABLE bool isActive(const QString option = "enableAccount") const {
+        if(m_botOptions.contains(option)) return(m_botOptions.value(option));
         return(false);
     }
-    Q_INVOKABLE QString cookieValue() const { return(m_cookieValue); }
-
-    void loadFinished(QWebPage*);
-    void replyFinished(QNetworkReply*);
 
 signals:
 
 public slots:
     void toggle(const QString option = "account", const bool on = false);
+    void loadFinished(QWebPage*);
+    void replyFinished(QNetworkReply*);
 
 private:
-    botConfig               m_config;
+    QMap<QString, bool>     m_botOptions;
     QString                 m_cookieValue;
     QNetworkAccessManager*  s_networkManager;
 };

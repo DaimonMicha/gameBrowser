@@ -55,9 +55,6 @@
     width: 22px;
     margin: 0 auto 2px;
 }
-.sbox-window-kmZones {
-    background: url(../img/user/bg_targetzones.jpg) no-repeat;
-}
 #klickMeisterLogo {
     text-align: left;
     font-size: 1.3em;
@@ -76,5 +73,44 @@
 #duelTable a.specialKM {
     color: white;
     cursor: pointer;
+}
+.sbox-medium.kmSqueeze {
+    height: 100%;
+}
+.sbox-medium.kmSqueeze div.modalWrapper,
+.sbox-medium.kmSqueeze div.sbox-short-header,
+.sbox-medium.kmSqueeze div.paperTabs,
+.sbox-medium.kmSqueeze div.knightTab {
+    height: 28px;
+    text-align: left;
+    padding: 0px;
+    margin: 0px;
+}
+.sbox-medium.kmSqueeze div.kmTabAreas {
+    background: url(../img/user/bg_targetzones.jpg) no-repeat;
+    background-position: -23px bottom;
+}
+.sbox-medium.kmSqueeze div.kmTabOptions {
+    background: url(../img/tables/charAttTableBackground.jpg);
+}
+#tabsnavi a {
+    cursor: pointer;
+}
+.sbox-medium.kmSqueeze div.squeezeTitle {
+    background: url(../img/user/bg_targetzones.jpg) no-repeat;
+    background-position: -30px -12px;
+    width: 100%;
+    height: 100%;
+}
+.sbox-medium.kmSqueeze div.missionName {
+    margin-left: 0px;
+    padding-top: 5px;
+}
+.sbox-medium.kmSqueeze div.knightTab {
+    height: 400px;
+}
+.kmTabWrapper {
+    border: 1px solid yellow;
+    height: 400px;
 }
 </style>

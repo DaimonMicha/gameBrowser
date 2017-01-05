@@ -1,35 +1,26 @@
 
 
-<!-- BattleKnight account plugin -->
+<!-- Plugin account plugin -->
 
 <style type="text/css">
 
 #accountPlugin {
     position: fixed;
-    float: left;
-    width: 150px;
-    /*height: 95%;*/
-    top: 13px;
-    padding-left: 2px;
+    float: right;
+    width: 175px;
+    top: 8px;
+    right: 5px;
+    padding-right: 5px;
     text-align: left;
     font-family: "Ubuntu Condensed", Arial, sans-serif;
     font-size: 1.2em;
     color: white;
+    border: 1px solid yellow;
 }
-#opponents {
-    position: absolute;
-    width: 140px;
-    top: 300px;
-    background-color: rgba(0, 0, 0, 0.45);
-    border: 3px solid grey;
-}
-#accountPlugin td {
-    height: 25px;
-}
-.klickMeisterLogo {
-    text-align: center;
-    font-size: 1.4em;
+#klickMeisterLogo {
+    font-size: 1.3em;
     font-weight: bold;
+    padding-top: 5px;
 }
 .kmHeader, .kmHeader a {
     font-size: 1.2em;

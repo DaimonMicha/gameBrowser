@@ -5,6 +5,9 @@
 #include <QWebPage>
 #include <QVariant>
 
+#include <QJsonDocument>
+#include <QJsonObject>
+
 #include "playermanager.h"
 #include "itemmanager.h"
 #include "reportmanager.h"
@@ -84,25 +87,29 @@ class Account : public QObject
     Q_OBJECT
 
 public:
-    Account(const QString cookie, QObject *parent = 0);
+    Account(const QString cookie, const QUrl url, QObject *parent = 0);
 
     Q_INVOKABLE bool isActive(const QString option = "enableAccount") const {
-        if(m_botOptions.contains(option)) return(m_botOptions.value(option));
+        if(m_accStatus.contains(option)) return(m_accStatus.value(option).toBool());
         return(false);
     }
     Q_INVOKABLE QString cookieValue() const { return(m_cookieValue); }
     Q_INVOKABLE void setProfile(const QVariant data);
+    Q_INVOKABLE void setStatus(const QVariant data);
     Q_INVOKABLE QString profile(const QString key) const;
     Q_INVOKABLE QString player(const QString id, const QString key) const;
     Q_INVOKABLE QString reports(const int count, const QString type) const;
+    Q_INVOKABLE QVariant status(const QString key) const;
 
     void loadFinished(QWebPage*);
     void replyFinished(QNetworkReply*);
 
+    QString fingerprint() const;
+    QJsonObject state();
+    void restoreState(const QJsonObject&);
+
 protected:
     void timerEvent(QTimerEvent *event);
-
-signals:
 
 public slots:
     void toggle(const QString option = "enableAccount", const bool soll = false);
@@ -116,11 +123,15 @@ public slots:
 private slots:
     void reasonCleaner();
 
+signals:
+    void playerFound();
+
 private:
-    //botConfig               m_config;
-    QMap<QString, bool>     m_botOptions;
     QString                 m_cookieValue;
     QNetworkAccessManager*  s_networkManager;
+    int                     m_accPlayer;
+    QString                 m_accHost;
+
     int                     m_cleanTimer;
     int                     m_missionsTimer;
     int                     m_gmTimer;
@@ -128,8 +139,9 @@ private:
     PlayerManager*          s_playerManager;
     ItemManager*            s_itemManager;
     ReportManager*          s_reportManager;
-    int                     m_accPlayer;
+
     QVariantMap             m_player;
+    QJsonObject             m_accStatus;
 };
 
 #endif // ACCOUNT_H

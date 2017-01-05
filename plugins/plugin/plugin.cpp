@@ -11,72 +11,46 @@
 #include <QDebug>
 
 
-void Plugin::initPlugin()
-{
-    Q_INIT_RESOURCE(data);
-
-    // Create seed for the random
-    // That is needed only once on application startup
-    QTime time = QTime::currentTime();
-    qsrand((uint)time.msec());
-
-    m_excludeExtensions
-            << "js"
-            << "mp3"
-            << "ogg"
-            << "css"
-            << "cur"
-            << "ico"
-            << "gif"
-            << "png"
-            << "jpg"
-            << "woff"
-            << "swf"
-               ;
-}
-
 Plugin::~Plugin()
 {
     Q_CLEANUP_RESOURCE(data);
-}
-
-bool Plugin::isMyUrl(const QUrl &url) const
-{
-    QString host = url.host();
-
-    foreach(QString pattern, m_settings.urlPatterns) {
-        if(host.endsWith(pattern)) return(true);
-    }
-
-    return(false);
 }
 
 void Plugin::loadSettings(QSettings& settings)
 {
     settings.beginGroup(name());
 
-    m_settings.enabled = settings.value(QLatin1String("enabled"), true).toBool();
-    m_settings.templatePath = settings.value(QLatin1String("templatePath"),
+    m_pluginSettings.enabled = settings.value(QLatin1String("enabled"), true).toBool();
+    m_pluginSettings.templatePath = settings.value(QLatin1String("templatePath"),
                         QStandardPaths::writableLocation(QStandardPaths::DataLocation) + "/" + name().toLower() + QLatin1String("/template/")).toString();
-    m_settings.urlPatterns = settings.value(QLatin1String("patterns"),
+    m_pluginSettings.urlPatterns = settings.value(QLatin1String("patterns"),
                         QStringList("daimonmicha.bplaced.net")).toStringList();
 
     settings.endGroup();
 
-    qDebug() << "\t"+name()+"::loadSettings" << m_settings.urlPatterns;
+    qDebug() << "\t"+name()+"::loadSettings" << m_pluginSettings.urlPatterns;
 }
 
 void Plugin::saveSettings(QSettings& settings)
 {
     settings.beginGroup(name());
 
-    settings.setValue(QLatin1String("enabled"), m_settings.enabled);
-    settings.setValue(QLatin1String("templatePath"), m_settings.templatePath);
-    settings.setValue(QLatin1String("patterns"), m_settings.urlPatterns);
+    settings.setValue(QLatin1String("enabled"), m_pluginSettings.enabled);
+    settings.setValue(QLatin1String("templatePath"), m_pluginSettings.templatePath);
+    settings.setValue(QLatin1String("patterns"), m_pluginSettings.urlPatterns);
 
     settings.endGroup();
 
     qDebug() << "\t"+name()+"::saveSettings";
+}
+
+void Plugin::saveState(QSettings& settings)
+{
+    settings.beginGroup(name());
+
+    settings.endGroup();
+
+//    qDebug() << "\t"+name()+"::saveState";
 }
 
 Account *Plugin::accFromCookie(const QString cValue)
@@ -88,34 +62,17 @@ Account *Plugin::accFromCookie(const QString cValue)
             break;
         }
     }
-
+    if(ret == NULL) {
+        ret = new Account(cValue, this);
+        ret->toggle("enableAccount", m_pluginSettings.enabled);
+        m_accounts.append(ret);
+    }
     return(ret);
-}
-
-int Plugin::readDataFile(const QString file, QString& data)
-{
-    QFile inject;
-    inject.setFileName(m_settings.templatePath + file);
-    if(!inject.open(QIODevice::ReadOnly)) {
-        inject.setFileName(":/"+name().toLower()+"/" + file);
-        if(!inject.open(QIODevice::ReadOnly)) {
-            return(-1);
-        }
-    }
-    if(inject.isOpen()) {
-        QByteArray bytes = inject.readAll();
-        inject.close();
-        data.append(bytes);
-        return(data.length());
-    }
-
-    return(-1);
 }
 
 void Plugin::injectHtml(QWebFrame* mainFrame, Account*)
 {
-    QWebElement pluginDiv = mainFrame->findFirstElement("#accountPlugin");
-    if(!pluginDiv.isNull()) return;
+    if(!mainFrame->findFirstElement("#accountPlugin").isNull()) return;
 
     QWebElement body = mainFrame->findFirstElement("body");
     QString di;
@@ -132,13 +89,8 @@ void Plugin::injectHtml(QWebFrame* mainFrame, Account*)
     }
     body.appendInside(di);
 
-    if(m_settings.enabled) {
-        QWebElement checker = body.findFirst("#clickChecker");
-        if(!checker.isNull()) checker.setAttribute("checked", "checked");
-    }
-
     di.truncate(0);
-    if(readDataFile("checkscript.js", di) <= 0) {
+    if(readDataFile("gamescript.js", di) <= 0) {
         return;
     }
     mainFrame->evaluateJavaScript(di);
@@ -158,10 +110,6 @@ void Plugin::replyFinished(QNetworkReply* reply)
 
     // look for an account with that cookie
     Account *current = accFromCookie(QString(cValue));
-    if(current == NULL) {
-        current = new Account(cValue);
-        m_accounts.append(current);
-    }
 
     current->replyFinished(reply);
 
@@ -187,16 +135,12 @@ void Plugin::loadFinished(QWebPage* page)
 
     // look for an account with that cookie
     Account *current = accFromCookie(QString(cValue));
-    if(current == NULL) {
-        current = new Account(cValue);
-        m_accounts.append(current);
-    }
 
     page->mainFrame()->addToJavaScriptWindowObject("account", current);
 
-    current->loadFinished(page);
-
     injectHtml(page->mainFrame(), current);
+
+    current->loadFinished(page);
 
     QString logString;
     QDateTime now = QDateTime::currentDateTimeUtc();

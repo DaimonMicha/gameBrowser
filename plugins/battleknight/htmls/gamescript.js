@@ -22,431 +22,962 @@ var targetAreas = {
     }
 }
 
-var kmProfile = new Class({Implements: [Options, Events, Chain
-    ],options: {
-        lastDuels: 7
-    },data: {
-        manor: {}
-    },modus: {
-    },myTable: {
-    },initialize: function(options) {
-        this.setOptions(options);
-        this.parseData();
-    },parseData: function() {
-        //this.notify(window.location.href);
-        var mainContent = document.id('mainContent');
-        var paths = [];
-        Array.each(window.location.pathname.split('/'),function(item){
-            if(item !== '') paths.push(item);
-        });
+function randInt(low, high) {
+    return(Math.floor(Math.random() * (high - low + 1)) + low);
+}
 
-        if(document.id(document.body).hasClass('nonPremium')) this.data.premium = false;
-        else this.data.premium = true;
-        this.data.contentTitle = document.id('contentTitle').get('text').trim();
+var kmCheckerModule = function() {
+    this.check = function(module) {
+    }
+    console.log('CREATE Object('+this.name+'): '+JSON.stringify(arguments));
+}
+/*
+var module = new kmParserModule('Aggressor',{'container':'kmAggressorResult','knight_id':status.knight_id});
+module.onCheck = function(module) {
+    var container = document.id(this.options.container);
+    var ist, soll;
+    var defId = container.retrieve('knight_id');
+    soll = account.player(defId,'hitZones');
+    ist = container.retrieve('hitZones');
+    if(soll !== ist) {
+        //document.id('enable'+this.module_name).checked = soll;
+        container.set('text', soll);
+        container.store('hitZones', soll);
+        console.log(this.module_name+': Zones-Check for ' + defId);
+    }
+};
+*/
+var kmParserModule = function(myName, options) {
+    this.module_name = myName || 'kmParserModule';
+    this.options = {
+        container: 'kmParser',
+        optionsClass: 'kmOptions',
+        lastDuels: 5
+    };
+    this.setOptions = function(options) {
+        Object.keys(options).forEach(function(val, idx){
+            this.options[val] = options[val];
+        },this);
+    };
+    this.initialize(options);
+    //console.log('#-> kmParserModule: ' + JSON.stringify(this));
+}
+kmParserModule.prototype.initialize = function(options) {
+    for(var key in options) {
+        var value = options[key];
 
-        this.parsePlayer();
-
-        if(mainContent.hasClass('cooldownDuel')) this.data.waitReason = 'duel';
-        else if(mainContent.hasClass('cooldownWork')) this.data.waitReason = 'work';
-        else if(mainContent.hasClass('cooldownTravel')) this.data.waitReason = 'travel';
-        else if(mainContent.hasClass('cooldownFight')) this.data.waitReason = 'fight';
-
-        if(typeof(progressbarEndTime) !== 'undefined') {
-            this.data.waitTime = progressbarEndTime;
-            if(typeof(progressbarDuration) !== 'undefined') {
-                this.data.waitDuration = progressbarDuration;
-                if(typeof(l_callUrl) !== 'undefined') {
-                    this.data.waitCaller = l_callUrl;
-                    //this.notify(this.data.waitCaller);
-                }
-            }
-        } else if(typeof(l_titleTimerEndTime) !== 'undefined') {
-            this.data.waitTime = l_titleTimerEndTime;
+        if(typeof(value) === 'number' || typeof(value) === 'string') {
+            this.options[key] = value;
+        } else if(typeof(value) === 'object') {
+            this.setOptions(value);
+        } else {
+            //console.log('typeof(value) =' + typeof(value) + ', ' + key + ' = ' + value);
         }
+    }
+    var eid = this.options.container;
+    var element = document.getElementById(eid);
+    if(!element) {
+        eid = 'km' + this.module_name;
+        element = document.getElementById(eid);
+    }
+    if(!element) return;
+    this.options.container = eid;
+    var cname = this.options.optionsClass;
 
-        if(paths[0] === 'common') {
-            if(paths.length > 1 && paths[1] === 'profile') {
-                this.parseProfile(paths[2]);
-            }
-        } else if(paths[0] === 'world') {
-            if(paths.length === 1) {
-                if(mainContent.hasClass('location')) {
-                    this.data.location = mainContent.classList["1"];
-                    this.data.missionPoints = parseInt(document.id('zoneChangeCosts').get('text').trim());
-                }
-            } else {
-                if(paths[1] === 'location') {
-                    if(mainContent.hasClass('location')) {
-                        this.data.location = mainContent.classList["1"];
-                        this.data.missionPoints = parseInt(document.id('zoneChangeCosts').get('text').trim());
-                    }
-                }
-            }
-        } else if(paths[0] === 'groupmission') {
-            if(paths.length === 1 || paths[1] === 'group') {
-                if(mainContent.hasClass('tavern')) {
-                    if(document.id('selectfoundPlandata')) {
-                        this.data.gmPoints = 120;
-                    } else {
-                        var div = document.querySelector('div.innerContent');
-                        div = document.id(div);
-                        if(div) {
-                            div = div.getFirst().getFirst();
-                            this.data.gmPoints = parseInt(div.get('text').trim());
-                        }
-                    }
-                }
-            }
-        } else if(paths[0] === 'duel') {
-            if(paths.length === 1) {
-                this.parseProposal();
-            } else {
-                if(paths[1] === 'compare') {
-                    // ?enemyID=2343
-                    //this.notify(JSON.encode(window.location.search));
-                    if(window.location.search !== '') {
-                        //this.notify(window.location.search.split('enemyID=').getLast());
-                    }
-                } else if(paths[1] === 'duel') {
-                    // ?enemyID=2343
-                    if(window.location.search !== '') {
-                        //this.notify(window.location.search.split('enemyID=').getLast());
-                    }
-                }
-            }
-        } else if(paths[0] === 'clan') {
-            if(paths.length === 1) {
-            } else {
-                if(paths[1] === 'members') {
-                    this.parseClanMembers();
-                }
-            }
-        } else if(paths[0] === 'manor') {
-            this.parseManor();
-        } else if(paths[0] === 'highscore') {
-            this.parseHighscore();
-        }
+    element.addEventListener('click', function(e) {
+        var e = e || window.event;
+        var target = e.target || e.srcElement;
 
-        account.setProfile(this.data);
+        if(target.nodeName === 'INPUT' && target.hasClass(cname)) {
+            account.toggle(target.id, target.checked);
+        }
+/*
+        console.log('ModulListener(click) ' + target.nodeName
+                    + ': ' + JSON.stringify(target.type)
+                    + ', id=' + target.id);
+*/
+    });
 
-        this.checkProfile();
-        this.checkDuels();
-        //this.notify('classes = ' + mainContent.classList + ', ' + JSON.encode(paths));
-    },parsePlayer: function() {
-        this.data.knight_id = parseInt(document.id('shieldNeutral').href.split('/')[5]);
-        this.data.knight_name = document.id('life').retrieve('tip:title').split(', Stufe')[0];
-        this.data.knight_level = parseInt(document.id('userLevel').get('text').trim());
-        this.data.life = parseInt(document.id('lifeCount').get('text').trim());
-        this.data.maxLife = g_maxHealth;
-        this.data.experience = parseInt(document.id('levelCount').get('text').trim());
-        this.data.silver = parseInt(document.id('silverCount').get('text').trim());
-        this.data.treasury = parseInt(document.id('silver').retrieve('tip:text').split(': ')[1]);
-        this.data.rubies = parseInt(document.id('rubyCount').get('text').trim());
-        if(document.id(document.body).hasClass('evil')) this.data.knight_course = 'evil';
-        else this.data.knight_course = 'good';
-    },parseProfile: function(kid) {
-        var player = {};
-        player.knight_id = parseInt(kid);
-        var container = document.id('profileImage');
-        container = container.getElement('h2');
-        var temp = container.get('text').trim();
-        var pos = temp.indexOf(' ');
-        player.knight_rang = temp.substr(0,pos);
-        player.knight_name = temp.substr(pos+1);
-        container = document.id('profileDetails');
-        var rows = container.getElements('td');
-        rows.each(function(row,index){
-            var tmp = row.get('text').trim();
-            switch(index) {
-                case 0:
-                    player.knight_level = parseInt(tmp);
-                    break;
-                case 1:
-                    var link = row.getFirst();
-                    if(link) {
-                        player.clan_id = parseInt(link.pathname.split('/')[3]);
-                        player.clan_tag = tmp.substr(1,tmp.length-2);
-                    }
-                    break;
-                case 2:
-                    if(player.clan_id) player.clan_rang = tmp;
-                    break;
-                case 3:
-                    player.loot_won = parseInt(tmp);
-                    break;
-                case 4:
-                    player.loot_lose = parseInt(tmp);
-                    break;
-                case 5:
-                    player.turniere = parseInt(tmp);
-                    break;
-                case 6:
-                    player.fights_won = parseInt(tmp);
-                    break;
-                case 7:
-                    player.fights_balance = parseInt(tmp);
-                    break;
-                case 8:
-                    player.fights_lose = parseInt(tmp);
-                    break;
-                default:
-                    break;
-            }
+}; // kmParserModule.prototype.initialize
+kmParserModule.prototype.check = function(module) {
+    if(typeof(this.onCheck) === 'function') this.onCheck(module);
+/*
+    console.log('ModulListener(check) ' + this.module_name
+                + ': ' + JSON.stringify(this)
+                + ', id=' + this.options.container);
+*/
+}; // kmParserModule.prototype.check
+
+var kM = kM || function() {
+    this.version = '0.0.1';
+    this.module_name = 'klickMeister';
+    this.options = {
+        container: 'accountPlugin',
+        optionsClass: 'kmOptions',
+        lastDuels: 5
+    };
+    this.data = {};
+    this.modules = [];
+
+    this.setOptions = function(options) {
+        Object.keys(options).forEach(function(val, idx){
+            this.options[val] = options[val];
         },this);
-        container = document.id('profileAttrib');
-        rows = container.getElements('td');
-        rows.each(function(row,index){
-            var tmp = row.get('text').trim();
-            switch(index) {
-                case 0: // Stärke
-                    player.strength = parseInt(tmp);
-                    break;
-                case 1: // Geschick
-                    player.dexterity = parseInt(tmp);
-                    break;
-                case 2: // Konstitution
-                    player.endurance = parseInt(tmp);
-                    break;
-                case 3: // Glück
-                    player.luck = parseInt(tmp);
-                    break;
-                case 4: // Waffenkunst
-                    player.weapon = parseInt(tmp);
-                    break;
-                case 5: // Verteidigungskunst
-                    player.shield = parseInt(tmp);
-                    break;
-                case 6: // Schaden
-                    tmp = tmp.split(' - ');
-                    player.damage_min = tmp[0];
-                    player.damage_max = tmp[1];
-                    break;
-                case 7: // Rüstung
-                    player.armour = parseInt(tmp);
-                    break;
-                default:
-                    break;
-            }
-        },this);
-        account.setPlayer(player);
-    },parseProposal: function() {
-        var proposal = document.id('proposals');
-        if(!proposal) return;
-        // alle a finden (bis zu 3)
-        var anchors = [];
-        Array.each(proposal.getElements('a'),function(anchor){
-            anchors.push(anchor.href);
-        });
-        //this.notify(anchors.length + ' ' + JSON.encode(anchors));
-    },parseClanMembers: function() {
-        var cmTable = document.id('membersTable');
-        var cmBody = cmTable.getElement('tbody');
-        var cmRows = cmBody.getElements('tr');
-        cmRows.each(function(row){
-            var cmCols = row.getElements('td');
-            var player = {};
-            cmCols.each(function(col){
-                if(col.hasClass('memberName')) {
-                    var link = col.getFirst();
-                    player.knight_id = parseInt(link.pathname.split('/')[3]);
-                    var temp = link.get('text');
-                    var pos = temp.indexOf(' ');
-                    player.knight_rang = temp.substr(0,pos);
-                    player.knight_name = temp.substr(pos+1);
-                } else if(col.hasClass('memberLevel')) {
-                    player.knight_level = parseInt(col.get('text'));
-                } else if(col.hasClass('memberSilver')) {
-                    player.silver_spend = parseInt(col.get('text').replace(/\./g,''));
-                } else if(col.hasClass('memberRubies')) {
-                    player.rubies_spend = parseInt(col.get('text').replace(/\./g,''));
-                } else if(col.hasClass('memberActivity')) {
-                    var div = col.getFirst();
-                    var temp = div.retrieve('tip:title');
-                    var pos = temp.indexOf(': ');
-                    player.last_activity = temp.substr(pos+2);
-                }
-            },this);
-            account.setPlayer(player);
-        },this);
-    },parseManor: function() {
-        for(i=1;i<7;++i) {
-            var item = document.id('manorItem'+i);
-            if(item.hasClass('manorItemActive')) {
-                var days = document.id('manorDays'+i);
-                this.data.manor['Item'+i] = parseInt(days.get('text'));
-            }
+    };
+
+    for(var key in arguments) {
+        var value = arguments[key];
+
+        if(typeof(value) === 'number' || typeof(value) === 'string') {
+            this.options[key] = value;
+        } else if(typeof(value) === 'object') {
+            this.setOptions(value);
         }
-    },parseHighscore: function() {
-        var hsTable = document.id('highscoreTable');
-        var hsBody = hsTable.getElement('tbody');
-        var hsRows = hsBody.getElements('tr');
-        hsRows.each(function(row,key){
-            if(!row.hasClass('userSeperator')) {
-                var hsCols = row.getElements('td');
-                var player = {};
-                hsCols.each(function(col){
-                    if(col.hasClass('highscore01')) {
-                    } else if(col.hasClass('highscore02')) {
-                        if(col.getFirst().hasClass('iconKarmaEvil')) player.course = 'evil';
-                        else player.knight_course = 'good';
-                    } else if(col.hasClass('highscore03')) {
-                        var links = col.getElements('a');
-                        player.knight_id = parseInt(links[0].pathname.split('/')[3]);
-                        var temp = links[0].get('text');
-                        var pos = temp.indexOf(' ');
-                        player.knight_rang = temp.substr(0,pos);
-                        player.knight_name = temp.substr(pos+1);
-                        if(links.length === 2) {
-                            player.clan_id = parseInt(links[1].pathname.split('/')[3]);
-                            temp = links[1].get('text');
-                            player.clan_tag = temp.substr(1,temp.length-2);
-                        }
-                    } else if(col.hasClass('highscore04')) {
-                        player.knight_level = parseInt(col.get('text'));
-                    } else if(col.hasClass('highscore05')) { // loot
-                        player.loot_won = parseInt(col.get('text').replace(/\./g,''));
-                    } else if(col.hasClass('highscore06')) { // fights
-                        player.fights = parseInt(col.get('text').replace(/\./g,''));
-                    } else if(col.hasClass('highscore07')) { // fights_won
-                        player.fights_won = parseInt(col.get('text').replace(/\./g,''));
-                    } else if(col.hasClass('highscore08')) { // fights_lose
-                        player.fights_lose = parseInt(col.get('text').replace(/\./g,''));
-                    }
-                },this);
-                account.setPlayer(player);
-            }
-        },this);
-    },getItemData: function(item_id) {
-        if(document.id(item_id)) account.setItem(document.id(item_id).retrieve('item:allAttributes'));
-    },notify: function(text) {
-        g_notify.alert('BattleKnight Plugin', text, {duration: 5000});
-    },pling: function() {
-        var audio = document.id('devAudioPling');
-        if($chk(audio) && !($chk(Browser.Engine.trident))) {
-            audio.play();
-        }
-    },buildZonesTooltip: function(knight_id) {
-        var tip;
-        var hitZones = account.player(knight_id,'hitZones');
-        var defendZones = account.player(knight_id,'defendZones');
-        if(!hitZones || !defendZones) return;
-        tip = '[ ';
-        JSON.decode(hitZones).each(function(zone,idx){
-            if(idx > 0) tip += ', ';
-            tip += targetAreas.Attack[zone][0];
-        },this);
-        tip += ' ]<br>[ ';
-        JSON.decode(defendZones).each(function(zone,idx){
-            if(idx > 0) tip += ', ';
-            tip += targetAreas.Defend[zone][0];
-        },this);
-        tip += ' ]';
-        return(tip);
-    },checkProfile: function() {
-        if(!account.isActive()) return;
+    }
+
+    this.gameModules = [];
+
+    //kmParserModule.prototype.initialize
+    // @disable-check M307
+    var module = new kmParserModule('Account',{'container':'kmAccount','optionsClass':this.options.optionsClass});
+    module.onCheck = function(module) {
         var ist, soll;
-        // Knight's Name
-        var knightName = document.id('km_knightName');
-        ist = knightName.get('text');
-        soll = account.profile('knight_name');
+        soll = account.isActive('enable'+this.module_name);
+        ist = document.id('enable'+this.module_name).checked;
         if(soll !== ist) {
-            knightName.set('text', soll);
+            document.id('enable'+this.module_name).checked = soll;
         }
-        if(!knightName.hasClass('knightToolTip')) {
-            var zonesTip = this.buildZonesTooltip(this.data.knight_id);
-            if(zonesTip) {
-                knightName.store('tip:title', 'Trefferzonen');
-                knightName.store('tip:text', zonesTip);
-                knightName.addClass('knightToolTip');
-                var km_knightToolTips = new Tips('.knightToolTip', {showDelay: 0,hideDelay: 10,className: 'mediumTip',onShow: function(tip) {
-                        tip.fade(0.8);
-                    },onHide: function(tip) {
-                        tip.fade(0);
-                    },text: ''});
-            }
+        // Knight's Name
+        soll = account.profile('knight_name');
+        ist = document.id('km_knightName').get('text');
+        if(soll !== ist) {
+            document.id('km_knightName').set('text', soll);
+            if(ist) document.id('km_knightName').highlight();
+        }
+        // Treasury Cooldown
+        soll = parseInt(account.status('timerTreasury'));
+        ist = parseInt(document.id('kmTreasuryTimer').retrieve('ist'));
+        if(soll !== ist) {
+            var values = countdown(soll);
+            document.id('kmTreasuryTimer').set('text', values.hours + ':' + values.minutes + ':' + values.seconds);
+            document.id('kmTreasuryTimer').store('ist', soll);
+            //if(ist) document.id('kmTreasuryTimer').highlight();
         }
         // Knight's Location
         ist = document.id('km_location').get('text');
         if(account.profile('location') && km_locations[account.profile('location')].title !== ist) {
             document.id('km_location').set('text', km_locations[account.profile('location')].title);
+            if(ist) document.id('km_location').highlight();
+        }
+    };
+    this.gameModules.push(module);
+    // @disable-check M307
+    module = new kmParserModule('Missions',{'container':'kmMissions','optionsClass':this.options.optionsClass});
+    module.onCheck = function() {
+        var ist, soll;
+        soll = account.isActive('enable'+this.module_name);
+        ist = document.id('enable'+this.module_name).checked;
+        if(soll !== ist) {
+            document.id('enable'+this.module_name).checked = soll;
         }
         // Mission Points
-        ist = document.id('km_missionPoints').get('text');
         soll = account.profile('missionPoints');
+        ist = document.id('km_missionPoints').get('text');
         if(soll !== ist) {
             document.id('km_missionPoints').set('text', soll);
+            if(ist) document.id('km_missionPoints').highlight();
+        }
+    };
+    this.gameModules.push(module);
+    // @disable-check M307
+    module = new kmParserModule('GM',{'container':'kmGM','optionsClass':this.options.optionsClass});
+    module.onCheck = function() {
+        var ist, soll;
+        soll = account.isActive('enable'+this.module_name);
+        ist = document.id('enable'+this.module_name).checked;
+        if(soll !== ist) {
+            document.id('enable'+this.module_name).checked = soll;
         }
         // GroupMission Points
         ist = document.id('km_gmPoints').get('text');
         soll = account.profile('gmPoints');
         if(soll !== ist) {
-            document.id('km_gmPoints').set('text', soll);
+            document.id('km_gmPoints').set('text', soll)
+            if(ist) document.id('km_gmPoints').highlight();
         }
-    },buildReportRow: function(id, report) {
-        if(document.id('report'+id)) return;
-        var duelsTableBody = document.id('duelTable').getLast();
-        var newRow = new Element('tr', {'id': 'report'+id, 'class': 'reportToolTip'});
-        var newEl;
-        newEl = new Element('td');
-        var icon = new Element('span', {'class': 'duelIcon'}); //iconWins
-        var stats;
-        var opponentId;
-        if(parseInt(this.data.knight_id) === parseInt(report.aggressor_id)) {
-            stats = report.fight_stats.aggressor;
-            opponentId = parseInt(report.defender_id);
-        } else {
-            stats = report.fight_stats.defender;
-            opponentId = parseInt(report.aggressor_id);
-            newRow.setStyle('background-color', 'rgba(165, 42, 42, 0.45)');
+    };
+    this.gameModules.push(module);
+    // @disable-check M307
+    module = new kmParserModule('ClanWar',{'container':'kmClanWar','optionsClass':this.options.optionsClass});
+    module.onCheck = function() {
+        var ist, soll;
+        soll = account.isActive('enable'+this.module_name);
+        ist = document.id('enable'+this.module_name).checked;
+        if(soll !== ist) {
+            document.id('enable'+this.module_name).checked = soll;
         }
-        var tipText = this.data.knight_name;
-        if(stats.fightResult === 'won') {
-            icon.addClass('iconWins');
-            tipText += ' erbeutet '+stats.silver+' Silber von ';
-        } else {
-            icon.addClass('iconLosses');
-            tipText += ' verliert '+Math.abs(parseInt(stats.silver))+' Silber an ';
+    };
+    this.gameModules.push(module);
+    // @disable-check M307
+    module = new kmParserModule('Duels',{'container':'kmDuels','optionsClass':this.options.optionsClass,'lastDuels':this.options.lastDuels});
+    module.onCheck = function() {
+        var ist, soll;
+        soll = account.isActive('enable'+this.module_name);
+        ist = document.id('enable'+this.module_name).checked;
+        if(soll !== ist) {
+            document.id('enable'+this.module_name).checked = soll;
         }
-        icon.inject(newEl);
-        tipText += account.player(opponentId,'knight_name')+'.';
-        tipText += '<br />'+this.buildZonesTooltip(opponentId);
-        var fTime = report.fight_time;//.split(' ')[1];
-        var pos = fTime.lastIndexOf(':')
-        fTime = fTime.substr(0,pos);
-        newRow.setAttribute('onClick', 'g_notify.alert("Duell ('+fTime+')", "'+tipText+'", {duration: 5000});');
-        newRow.store('tip:title', 'Duell ('+fTime+')');
-        newRow.store('tip:text', tipText);
-        newEl.inject(newRow);
-        newEl = new Element('td', {'align': 'right'});
-        var knightLink = new Element('a', {'class': 'specialKM', 'rel': '#modal_kmKnight', 'onClick': 'window.km_currentKnight='+opponentId+';'});
-        knightLink.set('text', account.player(opponentId,'knight_name'));
-        knightLink.inject(newEl);
-        newEl.inject(newRow);
-        newRow.inject(duelsTableBody);
-    },checkDuels: function() {
-        var temp = account.reports(this.options.lastDuels,'duel');
+        buildReportRow = function(id, report) {
+            //alert(id + ': ' + JSON.stringify(report));
+            var newRow = new Element('tr', {'id': 'report_'+id, 'class': 'reportToolTip'});
+            var newEl = new Element('td');
+            var icon = new Element('span', {'class': 'duelIcon'}); //iconWins
+            var stats;
+            var opponentId;
+
+            if(parseInt(account.profile('knight_id')) === parseInt(report.aggressor_id)) {
+                stats = report.fight_stats.aggressor;
+                opponentId = parseInt(report.defender_id);
+            } else {
+                stats = report.fight_stats.defender;
+                opponentId = parseInt(report.aggressor_id);
+                newRow.setStyle('background-color', 'rgba(165, 42, 42, 0.45)');
+            }
+            var tipText = account.profile('knight_name');
+            if(stats.fightResult === 'won') {
+                icon.addClass('iconWins');
+                tipText += ' erbeutet '+stats.silver+' Silber von ';
+            } else {
+                icon.addClass('iconLosses');
+                tipText += ' verliert '+Math.abs(parseInt(stats.silver))+' Silber an ';
+            }
+            icon.inject(newEl);
+            tipText += account.player(opponentId,'knight_name')+'.';
+            //tipText += '<br />'+this.buildZonesTooltip(opponentId);
+            var fTime = report.fight_time;//.split(' ')[1];
+            var pos = fTime.lastIndexOf(':')
+            fTime = fTime.substr(0,pos);
+            newRow.setAttribute('onClick', 'g_notify.alert("Duell ('+fTime+')", "'+tipText+'", {duration: 5000});');
+            newRow.store('tip:title', 'Duell ('+fTime+')');
+            newRow.store('tip:text', tipText);
+            newEl.inject(newRow);
+            newEl = new Element('td', {'align': 'right'});
+            var knightLink = new Element('a', {'class': 'specialKM', 'rel': '#modal_kmKnight', 'onClick': 'window.km_currentKnight='+opponentId+';'});
+            knightLink.set('text', account.player(opponentId,'knight_name'));
+
+            knightLink.inject(newEl);
+            newEl.inject(newRow);
+            return(newRow);
+        }
+
+        //console.log(JSON.stringify(this));
+        var temp = account.reports(parseInt(this.options.lastDuels),'duel');
+
         if(!temp) return;
-        var duelsTable = document.id('duelTable').getLast();
+        var duelsTableBody = document.id('duelTable').getLast();
+
+        var istRows = duelsTableBody.getElementsByTagName('tr');
+
         var duels = JSON.decode(temp);
         var keys = Object.keys(duels);
-        keys.reverse();
-        Array.each(keys,function(entry){
+        //keys.reverse();
+        Array.each(keys,function(entry) {
             var report = duels[entry];
-            this.buildReportRow(entry,report);
+            if(!document.id('report_'+entry)) {
+                var row = buildReportRow(entry, report);
+                if(row) {
+                    if(istRows.length >= this.options.lastDuels) {
+                        // letzte zeile entfernen
+                        duelsTableBody.removeChild(duelsTableBody.getLast());
+                    }
+                    //oben einfügen
+                    row.inject(duelsTableBody,'top');
+                }
+            }
         },this);
-        var km_knightToolTips = new Tips($$('.reportToolTip'), {showDelay: 0,hideDelay: 10,className: 'mediumTip',onShow: function(tip) {
-                tip.fade(0.8);
-            },onHide: function(tip) {
-                tip.fade(0);
-            },text: ''});
-        SqueezeBox.assign($$('a.specialKM'), {handler: 'rel',size: {x: 710,y: 470},classWindow: 'sbox-window-custom sbox-window-kmZones',
-            onOpen: function() {
-                var allDivs = $('sbox-content').getElements('div');
-                allDivs.each(function(kDiv){
-                    if(kDiv.hasClass('missionName')) {
-                        kDiv.getFirst().set('text', account.player(window.km_currentKnight,'knight_name'));
+    };
+    this.gameModules.push(module);
+    // @disable-check M307
+    module = new kmParserModule('Turnier',{'container':'kmTurnier','optionsClass':this.options.optionsClass});
+    module.onCheck = function() {
+        var ist, soll;
+        soll = account.isActive('enable'+this.module_name);
+        ist = document.id('enable'+this.module_name).checked;
+        if(soll !== ist) {
+            document.id('enable'+this.module_name).checked = soll;
+        }
+    };
+    this.gameModules.push(module);
+
+    this.checkModules = function(module) {
+        var module = module || 'all';
+        this.gameModules.forEach(function(v){v.check(module);},this);
+    }
+
+    this.parseDocument();
+    this.checkModules();
+
+};
+
+kM.prototype.parseDocument = function() {
+    var paths = [];
+    Array.each(window.location.pathname.split('/'),function(item){
+        if(item !== '') paths.push(item);
+    });
+
+    if(!paths.length) return;
+    var status = {};
+
+    var mainContent = document.id('mainContent');
+    status.mainContent = mainContent.classList.toString();
+    status.contentTitle = document.id('contentTitle').get('text').trim();
+
+    if(mainContent.hasClass('cooldownDuel')) status.waitReason = 'Duel';
+    else if(mainContent.hasClass('cooldownWork')) status.waitReason = 'Work';
+    else if(mainContent.hasClass('cooldownTravel')) status.waitReason = 'Travel';
+    else if(mainContent.hasClass('cooldownFight')) status.waitReason = 'Mission';
+
+    if(typeof(progressbarEndTime) !== 'undefined') {
+        status.waitTime = progressbarEndTime;
+        if(typeof(progressbarDuration) !== 'undefined') {
+            status.waitDuration = progressbarDuration;
+            if(typeof(l_callUrl) !== 'undefined') {
+                status.waitCaller = l_callUrl;
+            }
+        }
+    } else if(typeof(l_titleTimerEndTime) !== 'undefined') {
+        status.waitTime = l_titleTimerEndTime;
+    }
+
+
+    /*
+     * parses the document for acc-players data
+    */
+    parsePlayer = function(status) {
+        status.knight_id = parseInt(document.id('shieldNeutral').href.split('/')[5]);
+        status.knight_name = document.id('life').retrieve('tip:title').split(', Stufe')[0];
+        status.knight_level = parseInt(document.id('userLevel').get('text').trim());
+        status.life = parseInt(document.id('lifeCount').get('text').trim());
+        status.maxLife = g_maxHealth;
+        status.experience = parseInt(document.id('levelCount').get('text').trim());
+        status.silver = parseInt(document.id('silverCount').get('text').trim());
+        status.treasury = parseInt(document.id('silver').retrieve('tip:text').split(': ')[1]);
+        status.rubies = parseInt(document.id('rubyCount').get('text').trim());
+        if(document.id(document.body).hasClass('evil')) status.knight_course = 'evil';
+        else status.knight_course = 'good';
+
+        status.module = 'player';
+        return(status);
+    } // parsePlayer
+
+    /*
+     * parses the document of location baseUrl()+"common"
+    */
+    parseCommon = function(status, paths) {
+        var path = paths.shift();
+        var ret = {};
+
+        // parses "/common/profile"
+        parseProfile = function(kid) {
+            var ret = {};
+
+            ret.knight_id = parseInt(kid);
+            var container = document.id('profileImage');
+            container = container.getElement('h2');
+            var temp = container.get('text').trim();
+            var pos = temp.indexOf(' ');
+            ret.knight_rang = temp.substr(0,pos);
+            ret.knight_name = temp.substr(pos+1);
+            container = document.id('profileDetails');
+            var rows = container.getElements('td');
+            rows.each(function(row,index){
+                var tmp = row.get('text').trim();
+                switch(index) {
+                    case 0:
+                        ret.knight_level = parseInt(tmp);
+                        break;
+                    case 1:
+                        var link = row.getFirst();
+                        if(link) {
+                            ret.clan_id = parseInt(link.pathname.split('/')[3]);
+                            ret.clan_tag = tmp.substr(1,tmp.length-2);
+                        }
+                        break;
+                    case 2:
+                        if(ret.clan_id) ret.clan_rang = tmp;
+                        break;
+                    case 3:
+                        ret.loot_won = parseInt(tmp);
+                        break;
+                    case 4:
+                        ret.loot_lose = parseInt(tmp);
+                        break;
+                    case 5:
+                        ret.turniere = parseInt(tmp);
+                        break;
+                    case 6:
+                        ret.fights_won = parseInt(tmp);
+                        break;
+                    case 7:
+                        ret.fights_balance = parseInt(tmp);
+                        break;
+                    case 8:
+                        ret.fights_lose = parseInt(tmp);
+                        break;
+                    default:
+                        break;
+                }
+            },this);
+            container = document.id('profileAttrib');
+            rows = container.getElements('td');
+            rows.each(function(row,index){
+                var tmp = row.get('text').trim();
+                switch(index) {
+                    case 0: // Stärke
+                        ret.strength = parseInt(tmp);
+                        break;
+                    case 1: // Geschick
+                        ret.dexterity = parseInt(tmp);
+                        break;
+                    case 2: // Konstitution
+                        ret.endurance = parseInt(tmp);
+                        break;
+                    case 3: // Glück
+                        ret.luck = parseInt(tmp);
+                        break;
+                    case 4: // Waffenkunst
+                        ret.weapon = parseInt(tmp);
+                        break;
+                    case 5: // Verteidigungskunst
+                        ret.shield = parseInt(tmp);
+                        break;
+                    case 6: // Schaden
+                        tmp = tmp.split(' - ');
+                        ret.damage_min = tmp[0];
+                        ret.damage_max = tmp[1];
+                        break;
+                    case 7: // Rüstung
+                        ret.armour = parseInt(tmp);
+                        break;
+                    default:
+                        break;
+                }
+            },this);
+
+            ret.submodule = 'parseProfile';
+            return(ret);
+        } // parseProfile
+
+        switch(path) {
+            case 'profile':
+                ret = parseProfile(paths.shift());
+                account.setPlayer(ret);
+                break;
+            default:
+                break;
+        }
+
+        return(ret);
+    } // parseCommon
+
+    /*
+     * parses the document of location baseUrl()+"user"
+    */
+    parseUser = function(paths) {
+        var path = paths.shift();
+        var ret = {};
+
+        parseTravel = function() {
+            var ret = {};
+
+            return(ret);
+        } // parseTravel
+
+        switch(path) {
+            case 'travel':
+                //break;
+            default:
+                ret = parseTravel();
+                break;
+        }
+
+        return(ret);
+    } // parseUser
+
+    /*
+     * parses the document of location baseUrl()+"world"
+    */
+    parseWorld = function(paths) {
+        var path = paths.shift();
+        var ret = {};
+
+        parseLocation = function() {
+            var ret = {};
+
+            if(document.id('mainContent').hasClass('location')) {
+                ret.location = document.id('mainContent').classList["1"];
+                ret.missionPoints = parseInt(document.id('zoneChangeCosts').get('text').trim());
+            }
+
+            ret.subModule = 'location';
+            return(ret);
+        } // parseLocation
+
+        switch(path) {
+            case 'travel':
+                break;
+            case 'location':
+            default:
+                ret = parseLocation();
+                break;
+        }
+
+        ret.module = 'world';
+        return(ret);
+    } // parseWorld
+
+    /*
+     * parses the document of location baseUrl()+"groupmission"
+    */
+    parseGroupmission = function(paths) {
+        var path = paths.shift();
+        var ret = {};
+
+        parseGroup = function() {
+            var ret = {};
+            if(!document.id('mainContent').hasClass('tavern')) return(ret);
+            if(document.id('selectfoundPlandata')) {
+                ret.gmPoints = 120;
+            } else {
+                var div = document.querySelector('div.innerContent');
+                div = document.id(div);
+                if(div) {
+                    div = div.getFirst().getFirst();
+                    ret.gmPoints = parseInt(div.get('text').trim());
+                }
+            }
+            if(typeof(inGroup) === 'boolean') {
+                ret.inGroup = inGroup;
+                ret.duration = randInt((1000*23),(1000*60*5));
+                if(ret.inGroup) {
+                    ret.gmPoints = 120;
+                    //if(!ret.to) ret.to = setTimeout(this.groupTimer, ret.duration, this);
+                }
+            }
+            ret.subModule = 'group';
+            return(ret);
+        } // parseGroup
+
+        switch(path) {
+            case 'group':
+                //break;
+            default:
+                ret = parseGroup();
+                break;
+        }
+
+        return(ret);
+    } // parseGroupmission
+
+    /*
+     * parses the document of location baseUrl()+"market"
+    */
+    parseMarket = function(paths) {
+        var path = paths.shift();
+        var ret = {};
+
+        parseTravel = function() {
+            var ret = {};
+
+            return(ret);
+        } // parseTravel
+
+        switch(path) {
+            case 'travel':
+            default:
+                ret = parseTravel();
+                break;
+        }
+
+        return(ret);
+    } // parseMarket
+
+    /*
+     * parses the document of location baseUrl()+"duel"
+    */
+    parseDuel = function(status,paths) {
+        var path = paths.shift();
+        var ret = {};
+
+        parseDuel = function(status) {
+            status.defender = parseInt(window.location.search.split('enemyID=').getLast());
+            status.submodule = 'parseDuel';
+            return(status);
+        } // parseDuel
+
+        switch(path) {
+            case 'duel':
+                ret = parseDuel(status);
+                break;
+            case 'compare':
+            default:
+                break;
+        }
+
+        return(ret);
+    } // parseDuel
+
+    /*
+     * parses the document of location baseUrl()+"joust"
+    */
+    parseJoust = function(paths) {
+        var path = paths.shift();
+        var ret = {};
+
+        parseJoust = function() {
+            var ret = {};
+
+            return(ret);
+        } // parseTravel
+
+        switch(path) {
+            case 'zones':
+            case 'tent':
+            default:
+                ret = parseJoust();
+                break;
+        }
+
+        return(ret);
+    } // parseJoust
+
+    /*
+     * parses the document of location baseUrl()+"clan"
+    */
+    parseClan = function(paths) {
+        var path = paths.shift();
+        var ret = {};
+
+        parseMembers = function() {
+            var ret = {};
+            ret.members = [];
+
+            var cmTable = document.id('membersTable');
+            var cmBody = cmTable.getElement('tbody');
+            var cmRows = cmBody.getElements('tr');
+            cmRows.each(function(row){
+                var cmCols = row.getElements('td');
+                var player = {};
+                cmCols.each(function(col){
+                    if(col.hasClass('memberName')) {
+                        var link = col.getFirst();
+                        player.knight_id = parseInt(link.pathname.split('/')[3]);
+                        var temp = link.get('text');
+                        var pos = temp.indexOf(' ');
+                        player.knight_rang = temp.substr(0,pos);
+                        player.knight_name = temp.substr(pos+1);
+                    } else if(col.hasClass('memberLevel')) {
+                        player.knight_level = parseInt(col.get('text'));
+                    } else if(col.hasClass('memberSilver')) {
+                        player.silver_spend = parseInt(col.get('text').replace(/\./g,''));
+                    } else if(col.hasClass('memberRubies')) {
+                        player.rubies_spend = parseInt(col.get('text').replace(/\./g,''));
+                    } else if(col.hasClass('memberActivity')) {
+                        var div = col.getFirst();
+                        var temp = div.retrieve('tip:title');
+                        var pos = temp.indexOf(': ');
+                        player.last_activity = temp.substr(pos+2);
                     }
                 },this);
-        }});
+                account.setPlayer(player);
+                ret.members.push(player.knight_id);
+            },this);
+
+            ret.submodule = 'parseMembers';
+            return(ret);
+        } // parseMembers
+
+        switch(path) {
+            case 'members':
+                ret = parseMembers();
+                break;
+            case 'upgrades':
+            default:
+                break;
+        }
+
+        return(ret);
+    } // parseClan
+
+    /*
+     * parses the document of location baseUrl()+"manor"
+    */
+    parseManor = function(paths) {
+        var path = paths.shift();
+        var ret = {};
+
+        parseManor = function() {
+            var ret = {};
+
+            for(i=1;i<7;++i) {
+                var item = document.id('manorItem'+i);
+                if(item.hasClass('manorItemActive')) {
+                    var days = document.id('manorDays'+i);
+                    ret['Item'+i] = parseInt(days.get('text'));
+                }
+            }
+
+            ret.submodule = 'parseManor';
+            return(ret);
+        } // parseManor
+
+        switch(path) {
+            default:
+                ret = parseManor();
+                break;
+        }
+
+        return(ret);
+    } // parseManor
+
+    /*
+     * parses the document of location baseUrl()+"mail"
+    */
+    parseMail = function(paths) {
+        var path = paths.shift();
+        var ret = {};
+
+        parseReports = function() {
+            var ret = {};
+
+            return(ret);
+        } // parseReports
+
+        switch(path) {
+            case 'reports':
+                ret = parseReports();
+                break;
+            default:
+                break;
+        }
+
+        return(ret);
+    } // parseMail
+
+    /*
+     * parses the document of location baseUrl()+"highscore"
+    */
+    parseHighscore = function(paths) {
+        var path = paths.shift();
+        var ret = {};
+
+        parseHighscore = function() {
+            var ret = {};
+            ret.players = [];
+
+            var hsTable = document.id('highscoreTable');
+            var hsBody = hsTable.getElement('tbody');
+            var hsRows = hsBody.getElements('tr');
+            hsRows.each(function(row,key){
+                if(!row.hasClass('userSeperator')) {
+                    var hsCols = row.getElements('td');
+                    var player = {};
+                    hsCols.each(function(col){
+                        if(col.hasClass('highscore01')) {
+                        } else if(col.hasClass('highscore02')) {
+                            if(col.getFirst().hasClass('iconKarmaEvil')) player.course = 'evil';
+                            else player.knight_course = 'good';
+                        } else if(col.hasClass('highscore03')) {
+                            var links = col.getElements('a');
+                            player.knight_id = parseInt(links[0].pathname.split('/')[3]);
+                            var temp = links[0].get('text');
+                            var pos = temp.indexOf(' ');
+                            player.knight_rang = temp.substr(0,pos);
+                            player.knight_name = temp.substr(pos+1);
+                            if(links.length === 2) {
+                                player.clan_id = parseInt(links[1].pathname.split('/')[3]);
+                                temp = links[1].get('text');
+                                player.clan_tag = temp.substr(1,temp.length-2);
+                            }
+                        } else if(col.hasClass('highscore04')) {
+                            player.knight_level = parseInt(col.get('text'));
+                        } else if(col.hasClass('highscore05')) { // loot
+                            player.loot_won = parseInt(col.get('text').replace(/\./g,''));
+                        } else if(col.hasClass('highscore06')) { // fights
+                            player.fights = parseInt(col.get('text').replace(/\./g,''));
+                        } else if(col.hasClass('highscore07')) { // fights_won
+                            player.fights_won = parseInt(col.get('text').replace(/\./g,''));
+                        } else if(col.hasClass('highscore08')) { // fights_lose
+                            player.fights_lose = parseInt(col.get('text').replace(/\./g,''));
+                        }
+                    },this);
+                    account.setPlayer(player);
+                    ret.players.push(player.knight_id);
+                }
+            },this);
+
+            ret.submodule = 'parseHighscore';
+            return(ret);
+        } // parseReports
+
+        switch(path) {
+            case 'order':
+                break;
+            default:
+                ret = parseHighscore();
+                break;
+        }
+
+        return(ret);
+    } // parseHighscore
+
+    /*
+     * parses the document in case of mainContent.hasClass('fightResult')
+    */
+    parseFightResult = function(status) {
+        var ret = [];
+        status.fightResult = true;
+        if(status.module !== 'duel') return;
+
+        var mainContent = document.id('mainContent');
+        var resultDiv = mainContent.getElement('div.fightResults');
+
+        var aggressorDiv = new Element('div', {'id': 'kmAggressorResult', 'class': 'kmKnightInfo'});
+        aggressorDiv.setStyles({'float':'left','width':'205px','height':'100%', 'border':'0px solid red','position':'absolute','display':'inline','top':'10px','text-align':'right','vertical-align':'bottom'});
+        aggressorDiv.inject(resultDiv,'top'); //oben einfügen
+        aggressorDiv.store('knight_id', status.knight_id);
+
+        // @disable-check M307
+        var module = new kmParserModule('Aggressor',{'container':'kmAggressorResult','knight_id':status.knight_id});
+        module.onCheck = function(module) {
+            var container = document.id(this.options.container);
+            var ist, soll;
+            soll = account.player(this.options.knight_id,'hitZones');
+            ist = container.retrieve('hitZones');
+            if(soll !== ist) {
+                container.set('text', soll);
+                container.store('hitZones', soll);
+                console.log(this.module_name+': Zones-Check for ' + this.options.knight_id);
+            }
+        };
+        ret.push(module);
+
+        var defenderDiv = aggressorDiv.clone();
+        defenderDiv.set('id', 'kmDefenderResult');
+        defenderDiv.setStyles({'float':'right','right':'0px','top':'10px','text-align':'left'});
+        defenderDiv.inject(resultDiv);
+        defenderDiv.store('knight_id', status.defender);
+
+        var table = document.id('kmZonesTable').clone();
+        table.inject(defenderDiv);
+        table.removeClass('nodisplay');
+
+        // @disable-check M307
+        module = new kmParserModule('Defender',{'container':'kmDefenderResult','knight_id':status.defender});
+        module.onCheck = function(module) {
+            var container = document.id(this.options.container);
+            var hits, defs;
+            hits = account.player(this.options.knight_id,'hitZones');
+            defs = account.player(this.options.knight_id,'defendZones');
+            if(hits !== container.retrieve('hitZones') || defs !== container.retrieve('defZones')) {
+                var table = container.getFirst('table');
+                if(!table) {
+                    container.set('text', soll);
+                } else {
+                    if(hits.length > 0 && defs.length > 0) {
+                        var hZones = JSON.parse(hits);
+                        var dZones = JSON.parse(defs);
+                        var rows = table.getFirst('tbody').getElements('tr');
+                        for(var c = 0;c < rows.length; ++c) {
+                            var cols = rows[c].getElements('td');
+                            cols[1].set('text',targetAreas.Attack[hZones[c]][1]);
+                            cols[3].set('text',targetAreas.Defend[dZones[c]][1]);
+                        }
+                        console.log('hitZones\t:' + hits + ':' + defs);
+                    }
+                }
+                container.store('hitZones', hits);
+                container.store('defZones', defs);
+                console.log(this.module_name+': Zones-Check for ' + this.options.knight_id);
+            }
+        };
+        ret.push(module);
+
+        return(ret);
+    } // parseFightResult
+
+    // Here comes the work:
+    this.data.status = {};
+
+    this.data.player = parsePlayer(status);
+    if(document.id(document.body).hasClass('nonPremium')) this.data.player.premium = false;
+    else this.data.player.premium = true;
+    account.setProfile(this.data.player);
+
+    var path = paths.shift();
+    switch(path) {
+        case 'common':
+            this.data.status = parseCommon(status, paths);
+            break;
+        case 'user':
+            this.data.status = parseUser(paths);
+            break;
+        case 'world':
+            this.data.status = parseWorld(paths);
+            break;
+        case 'groupmission':
+            this.data.status = parseGroupmission(paths);
+            break;
+        case 'market':
+            this.data.status = parseMarket(paths);
+            break;
+        case 'duel':
+            this.data.status = parseDuel(status, paths);
+            break;
+        case 'joust':
+            this.data.status = parseJoust(paths);
+            break;
+        case 'clan':
+            this.data.status = parseClan(paths);
+            break;
+        case 'manor':
+            this.data.status = parseManor(paths);
+            break;
+        case 'mail':
+            this.data.status = parseMail(paths);
+            break;
+        case 'highscore':
+            this.data.status = parseHighscore(paths);
+            break;
+        default:
+            this.data.status.module = null;
+            break;
     }
-});
+
+    this.data.status.module = path;
+    status.module = path;
+    if(mainContent.hasClass('fightResult') && status.module === 'duel') {
+        var result = parseFightResult(status);
+        //console.log(JSON.stringify(typeof(result))+', '+JSON.stringify(result));
+        if(typeof(result) === 'object' || typeof(result) === 'array') {
+            for(var i=0; i<result.length; ++i) {
+                this.gameModules.push(result[i]);
+                //console.log(result[i].module_name+': setup Module with ' + JSON.stringify(result[i]));
+            }
+        }
+    }
+
+    account.setProfile(this.data.status);
+    //account.setStatus(this.data.status);
+
+    //console.log('parseDocument :'+JSON.stringify(status));
+    account.setStatus(status);
+
+    //var test = new kmCheckerModule({'name':'Aggressor','element':'kmDefenderResult'});
+    //console.log(JSON.stringify(typeof(test))+', '+JSON.stringify(test));
+
+    //var zones = JSON.parse(account.player(status.knight_id,'hitZones'));
+    //console.log(typeof(zones)+', '+zones[0]);
+
+}; // kM.prototype.parseDocument
+

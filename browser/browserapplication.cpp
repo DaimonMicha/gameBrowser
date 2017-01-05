@@ -303,6 +303,8 @@ void BrowserApplication::saveSession()
         stream << m_mainWindows.at(i)->saveState();
     settings.setValue(QLatin1String("lastSession"), data);
     settings.endGroup();
+    BrowserApplication::pluginManager()->saveState();
+    //qDebug() << "BrowserApplication::saveSession" << data.length();
 }
 
 bool BrowserApplication::canRestoreSession() const

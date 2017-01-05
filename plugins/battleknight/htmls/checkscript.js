@@ -1,14 +1,14 @@
 
-var km_profile = new kmProfile();
+var kM = kM || function() {};
 
-function checkProfile(){
-    km_profile.checkProfile();
+function checkProfile() {
+    myGame.checkModules();
 }
 
-var boxes = $$('input.kmChecker');
-boxes.each(function(box) {
-    if(account.isActive(box.id)) box.setAttribute('checked', 'checked');
-    box.addEvent('click', function() { account.toggle(box.id, box.checked); });
-});
+// @disable-check M307
+var myGame = new kM({ container: 'accountPlugin'
+                        , optionsClass: 'kmOptions'
+                        , lastDuels: 5
+                    });
 
 window.setInterval(checkProfile, 500);

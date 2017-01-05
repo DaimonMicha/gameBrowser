@@ -16,7 +16,7 @@
 #include <QDebug>
 
 
-Account::Account(const QString cookie, QObject *parent) :
+Account::Account(const QString cookie, const QUrl url, QObject *parent) :
     QObject(parent),
     m_cookieValue(cookie),
     s_networkManager(0),
@@ -28,6 +28,11 @@ Account::Account(const QString cookie, QObject *parent) :
     m_player.insert("missionPoints",QVariant(0));
     m_player.insert("gmPoints",QVariant(0));
     m_accPlayer = 0;
+
+    QStringList parts = url.host().split(".");
+    m_accHost = parts.at(0) + "." + parts.at(1);
+    //m_accStatus.insert("cookieValue", QJsonValue(m_cookieValue));
+
     m_missionsTimer = startTimer(60 * 60 * 1000);
     m_gmTimer = startTimer(60 * 60 * 1000);
     connect(s_reportManager, SIGNAL(playerCheck(QVariant)),
@@ -45,9 +50,9 @@ void Account::toggle(const QString option, const bool soll)
     }
 
     if(ist != soll) {
-        m_botOptions.insert(option, soll);
+        m_accStatus.insert(option,QJsonValue(soll));
+        qDebug() << parent()->metaObject()->className() << "Account::toggle:" << option << soll << m_accStatus.value(option).toVariant();
     }
-    qDebug() << "Account::toggle:" << option << soll;
 }
 
 void Account::timerEvent(QTimerEvent *event)
@@ -74,9 +79,46 @@ void Account::timerEvent(QTimerEvent *event)
         if(m_player.contains("gmPoints")) {
             int p = m_player.value("gmPoints").toInt() + 5;
             if(p < 125) m_player.insert("gmPoints", p);
-            qDebug() << "\n\tadjust gmPoints:" << m_player.value("gmPoints").toInt();
+            //qDebug() << "\n\tadjust gmPoints:" << m_player.value("gmPoints").toInt();
         }
     }
+}
+
+QString Account::fingerprint() const
+{
+    QString ret;
+    if(m_accPlayer > 0 && m_accHost != "") ret = QString(".%1").arg(m_accPlayer).prepend(m_accHost);
+    return(ret);
+}
+
+QJsonObject Account::state()
+{
+    QDateTime now = QDateTime::currentDateTime();
+    m_accStatus.insert("timestamp",QJsonValue(QString("%1").arg(now.toTime_t())));
+    //QJsonDocument debug(m_accStatus);
+    //qDebug() << "Account::state:\n" << debug.toJson().constData();
+    return(QJsonObject(m_accStatus));
+}
+
+void Account::restoreState(const QJsonObject& state)
+{
+/*
+    QJsonDocument old(m_accStatus);
+    qDebug() << "Account::restoreState (from):" << old.toJson();
+    QJsonDocument debug(state);
+    qDebug() << "Account::restoreState (to):" << debug.toJson();
+*/
+    foreach(QString key, state.keys()) {
+        // ältere cooldowns entfernen.
+        if(key.startsWith("timer")) {
+            if(key.endsWith("EST")) {
+            }
+        }
+        m_accStatus.insert(key,state.value(key));
+    }
+
+    QJsonDocument debug(m_accStatus);
+    qDebug() << "Account::restoreState (to):" << debug.toJson().constData();
 }
 
 void Account::reasonCleaner()
@@ -95,6 +137,8 @@ void Account::setProfile(const QVariant data)
 
     if(o.contains("knight_id") && m_accPlayer == 0) {
         m_accPlayer = o.value("knight_id").toInt();
+        // from now on we have an fingerprint...
+        emit(playerFound());
     }
 
     foreach(QString key, o.keys()) {
@@ -118,10 +162,65 @@ void Account::setProfile(const QVariant data)
     }
 
     if(o.contains("waitReason") && m_cleanTimer == 0) {
-        m_cleanTimer = startTimer(m_player.value("waitTime").toInt()*1000+100);
+        m_cleanTimer = startTimer(m_player.value("waitTime").toInt()*1000+150);
     }
 
-    //qDebug() << json.toJson();
+    //qDebug() << parent()->metaObject()->className() << "Account::setProfile" << json.toJson();
+}
+
+void Account::setStatus(const QVariant data)
+{
+    QJsonDocument json = QJsonDocument::fromVariant(data);
+    QJsonObject o = json.object();
+    QDateTime now = QDateTime::currentDateTime();
+
+    if(o.contains("waitReason") && m_cleanTimer == 0) {
+        QString reason = o.value("waitReason").toString();
+        if(!m_accStatus.contains("timerAccountEST")) {
+        }
+        //m_cleanTimer = startTimer(m_player.value("waitTime").toInt()*1000+100);
+    }
+
+    if(o.contains("module")) {
+        QString module = o.value("module").toString();
+        if(module == "treasury") {
+            if(o.contains("waitTime")) {
+                if(o.value("waitTime").toInt() != 0) {
+                    m_accStatus.insert("timerTreasuryEST", QJsonValue((qint64) now.addSecs(o.value("waitTime").toInt()).toTime_t()));
+                    m_accStatus.insert("timerTreasuryDuration", QJsonValue((qint64) 21600));
+                } else {
+                    m_accStatus.remove("timerTreasuryEST");
+                    m_accStatus.remove("timerTreasuryDuration");
+                }
+            }
+        }
+    }
+
+    qDebug() << parent()->metaObject()->className() << "Account::setStatus" << json.toJson().constData();
+}
+
+QVariant Account::status(const QString key) const
+{
+    QVariant ret;
+
+    if(key.startsWith("timer")) {
+        QDateTime now = QDateTime::currentDateTime();
+        if(key == "timerTreasury") {
+            QDateTime est = QDateTime::fromTime_t(m_accStatus.value("timerTreasuryEST").toInt());
+            if(est > now) {
+                return(QVariant(est.toTime_t() - now.toTime_t()));
+            } else {
+                if(m_accStatus.contains("timerTreasuryEST")) m_accStatus.remove("timerTreasuryEST");
+                if(m_accStatus.contains("timerTreasuryDuration")) m_accStatus.remove("timerTreasuryDuration");
+            }
+        }
+    }
+
+    if(m_accStatus.contains(key)) {
+        ret = m_accStatus.value(key).toVariant();
+    }
+
+    return(ret);
 }
 
 QString Account::profile(const QString key) const
@@ -272,11 +371,32 @@ void Account::replyFinished(QNetworkReply* reply)
                     setItem(items[i].toObject());
                 }
             } else if(paths.at(2) == QString("buyItem")) {
-                qDebug() << "buyItem:" << reply->property("getData").toByteArray();
+/*
+
+buyItem: "{"result":true,"reason":"","data":{"item":{"item_id":4785682,"item_level":"1",
+    "item_info":{"posX":2,"posY":3},"item_width":"1","item_depth":"1","item_inventory":"1","item_own":"28545","item_pic":"Clue01_closed","item_set":0,"item_add":0,
+    "item_name":"item\/clue1","item_fullName":"Allt&auml;glicher Hinweis","item_magic_level":"white","item_value":88,"item_ruby":0,"item_slot":11,
+    "item_rune":0,"item_rune1":0,"item_rune2":0,"item_rune3":0,"item_str":0,"item_dex":0,"item_end":0,"item_luck":0,"item_weapon":0,"item_shield":0,
+    "item_ride":0,"item_critical":0,"item_speed":0,"item_off":0,"item_def":0,"item_damage":0,"item_damage2":0,"item_armour":0,"item_fire":0,"item_ice":0,
+    "item_shock":0,"item_poison":0,"item_fire_res":0,"item_ice_res":0,"item_shock_res":0,"item_poison_res":0,"item_special_ability":"a:0:{}",
+    "item_manor_seconds":0,"item_desckey":0,"item_location":"FortressTwo","item_additionals":false,
+    "item_use":0,
+    "clue_item":"4785682","clue_level":"1","clue_status":"Mission","clue_data":{
+        "location":"CapitalCity","mission":"MysticalTower"}
+    },"silver":17531,"rubies":191,
+    "inventory":"01100000000011110100111100101111000011110001111110111111",
+    "tooltip_normal":"<div class=\"itemToolTip\"><table width=\"180\" border=\"0\" cellpadding=\"0\" cellspacing=\"0\" summary=\"Summary\">  <colgroup><col class=\"itemColumn\" \/>    <col class=\"itemColumn value\" \/><\/colgroup>  <tr>    <th class=\"itemTitle white\" colspan=\"2\" scope=\"row\">    Allt&auml;glicher Hinweis<\/th>  <\/tr>      <tr class=\"tall\">    <th scope=\"row\"><span class=\"icon iconSilver\"><\/span><\/th>    <td scope=\"row\">88<\/td>  <\/tr> <tr class=\"tall\"><th colspan=\"2\" scope=\"row\">Reise nach Endalain. Bei einer der Missionen dort wirst du etwas N&uuml;tzliches finden.<\/th><\/tr>  <tr class=\"short\">    <th scope=\"row\">&nbsp;<\/th>    <td scope=\"row\"><\/td>  <\/tr><tr class=\"tall\"><th scope=\"row\" colspan=\"2\"><\/th><\/tr><\/table><\/div>","tooltip_compare":"<div class=\"itemToolTip\"><table width=\"350\" border=\"0\" cellpadding=\"0\" cellspacing=\"0\" summary=\"Summary\"><colgroup><col class=\"itemColumn\" \/>    <col class=\"itemColumn value\" \/>    <col class=\"compareColumn\" \/><col class=\"itemColumn\" \/>    <col class=\"itemColumn value\" \/><\/colgroup>  <tr class=\"tableFirstRow\"><th width=\"44%\" class=\"itemTitle tableCol1 white\" colspan=\"2\" scope=\"row\">Allt&auml;glicher Hinweis<\/th><td width=\"12%\" scope=\"row\" class=\"tableCol2\"><\/td><td width=\"44%\" colspan=\"2\" scope=\"row\" class=\"tableCol3\"><span class=\"itemTitle ##compareClassName##\">##compareName##<\/span>(getragen)<\/td><\/tr><tr class=\"tall\"><th scope=\"row\"><span class=\"icon iconSilver\"><\/span><\/th><td scope=\"row\">88<\/td><td scope=\"row\"><\/td>##compareSilverHalfRow##<\/tr>##rubyRow####runeRow##  <tr class=\"short\">    <th scope=\"row\">&nbsp;<\/th>    <td scope=\"row\"><\/td><td><\/td>    <th scope=\"row\">&nbsp;<\/th>    <td scope=\"row\"><\/td>  <\/tr>  <tr>    <th scope=\"row\">&nbsp;<\/th>    <td scope=\"row\"><\/td>    <td><span class=\"info\">+\/-<\/span><\/td>    <th scope=\"row\">&nbsp;<\/th>    <td scope=\"row\"><\/td>  <\/tr>##compareAttributeRows##<tr class=\"short\"><th scope=\"row\" colspan=\"2\"><\/th><td><\/td><th scope=\"row\" colspan=\"2\">##SpecialAbilities##<\/th><\/tr><\/table><\/div>"
+    }
+}"
+
+*/
+                //qDebug() << "buyItem:" << reply->property("getData").toByteArray();
             } else if(paths.at(2) == QString("sellItem")) {
                 qDebug() << "sellItem:" << reply->property("getData").toByteArray();
             } else if(paths.at(2) == QString("placeItem")) {
                 qDebug() << "placeItem:" << reply->property("getData").toByteArray();
+            } else if(paths.at(2) == QString("wearItem")) {
+                qDebug() << "wearItem:" << reply->property("getData").toByteArray();
             }
         } else if(paths.at(1) == QString("duel")) {
             if(paths.at(2) == QString("proposals")) {
@@ -325,9 +445,7 @@ void Account::replyFinished(QNetworkReply* reply)
             if(query.hasQueryItem("inboxtype") && query.queryItemValue("inboxtype") == "reports") {
                 QJsonDocument json = QJsonDocument::fromJson(reply->property("getData").toByteArray());
                 QJsonArray mails = json.object().value("mails").toArray();
-                //foreach(QJsonValue mail, mails) {
-                    //s_reportManager->checkReport(mail.toVariant());
-                //}
+                //qDebug() << "lese" << mails.count() << "mails.";// << json.toJson(QJsonDocument::Compact);
                 while(!mails.isEmpty()) {
                     s_reportManager->checkReport(mails.last().toVariant());
                     mails.removeLast();

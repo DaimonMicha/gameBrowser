@@ -9,9 +9,20 @@
 #include <QNetworkCookieJar>
 #include <QtGui/QDesktopServices>
 
-#include <QJsonDocument>
-
 #include <QDebug>
+
+
+
+jsConsole::jsConsole(QObject *parent) :
+    QObject(parent)
+{
+}
+
+void jsConsole::log(const QByteArray& data)
+{
+    qDebug() << "jsConsole::log:" << data;
+}
+
 
 
 
@@ -24,75 +35,68 @@ BattleKnight::~BattleKnight()
     Q_CLEANUP_RESOURCE(data);
 }
 
-void BattleKnight::initPlugin()
-{
-    Q_INIT_RESOURCE(data);
-
-    // Create seed for the random
-    // That is needed only once on application startup
-    QTime time = QTime::currentTime();
-    qsrand((uint)time.msec());
-
-    m_excludeExtensions
-            << "js"
-            << "mp3"
-            << "ogg"
-            << "css"
-            << "cur"
-            << "ico"
-            << "gif"
-            << "png"
-            << "jpg"
-            << "woff"
-            << "swf"
-               ;
-}
-
-bool BattleKnight::isMyUrl(const QUrl &url) const
-{
-    QString host = url.host();
-
-    foreach(QString pattern, m_settings.urlPatterns) {
-
-        QRegExp rx(pattern);
-        rx.setPatternSyntax(QRegExp::Wildcard);
-        if(rx.exactMatch(host)) return(true);
-
-        if(host.endsWith(pattern)) return(true);
-    }
-
-    return(false);
-}
-
 void BattleKnight::loadSettings(QSettings &settings)
 {
     settings.beginGroup(name());
 
-    m_settings.enabled = settings.value(QLatin1String("enabled"), true).toBool();
-    m_settings.templatePath = settings.value(QLatin1String("templatePath"),
+    m_pluginSettings.enabled = settings.value(QLatin1String("enabled"), true).toBool();
+    m_pluginSettings.templatePath = settings.value(QLatin1String("templatePath"),
                         QStandardPaths::writableLocation(QStandardPaths::DataLocation) + "/" + name().toLower() + QLatin1String("/template/")).toString();
-    m_settings.urlPatterns = settings.value(QLatin1String("patterns"),
+    m_pluginSettings.urlPatterns = settings.value(QLatin1String("patterns"),
                         QStringList(".battleknight.gameforge.com")).toStringList();
+
+    m_accountStates = QJsonDocument::fromJson(settings.value(QLatin1String("accountStates")).toByteArray()).object();
 
     settings.endGroup();
 
-    qDebug() << "\t"+name()+"::loadSettings" << m_settings.urlPatterns;
+    //qDebug() << "\t"+name()+"::loadSettings";
 }
 
 void BattleKnight::saveSettings(QSettings& settings)
 {
     settings.beginGroup(name());
 
-    settings.setValue(QLatin1String("enabled"), m_settings.enabled);
-    settings.setValue(QLatin1String("templatePath"), m_settings.templatePath);
-    settings.setValue(QLatin1String("patterns"), m_settings.urlPatterns);
+    settings.setValue(QLatin1String("enabled"), m_pluginSettings.enabled);
+    settings.setValue(QLatin1String("templatePath"), m_pluginSettings.templatePath);
+    settings.setValue(QLatin1String("patterns"), m_pluginSettings.urlPatterns);
 
     settings.endGroup();
 
-    qDebug() << "\t"+name()+"::saveSettings";
+    //qDebug() << "\t"+name()+"::saveSettings";
 }
 
-Account *BattleKnight::accFromCookie(const QString cValue)
+void BattleKnight::saveState(QSettings& settings)
+{
+    QByteArray debugMsg;
+    settings.beginGroup(name());
+
+    if(m_accounts.count() > 0) foreach(Account *account, m_accounts) {
+        if(!account->fingerprint().isEmpty()) {
+            m_accountStates.insert(account->fingerprint(), account->state());
+            //debugMsg.append("saveState for \""+m_accountStates.insert(account->fingerprint(), account->state()).key()+"\".\n");
+        }
+    }
+    QJsonDocument ret(m_accountStates);
+
+    settings.setValue(QLatin1String("accountStates"), ret.toJson(QJsonDocument::Compact).constData());
+    settings.endGroup();
+
+    //debugMsg.append(name()+"::saveStates: \n").append(ret.toJson(QJsonDocument::Compact)+"\n"); // QJsonDocument::Compact
+    if(!debugMsg.isEmpty()) qDebug() << debugMsg.constData();
+}
+
+void BattleKnight::hasPlayer()
+{
+    Account* account = qobject_cast<Account *>(sender());
+    if(!account) return;
+    // restoreState versuchen
+    if(m_accountStates.contains(account->fingerprint())) {
+        account->restoreState(m_accountStates.value(account->fingerprint()).toObject());
+    }
+    //qDebug() << "BattleKnight::hasPlayer" << account->fingerprint();
+}
+
+Account *BattleKnight::accFromCookie(const QString cValue, const QUrl url)
 {
     Account *ret = NULL;
     if(m_accounts.count() > 0) foreach(Account *account, m_accounts) {
@@ -102,8 +106,9 @@ Account *BattleKnight::accFromCookie(const QString cValue)
         }
     }
     if(ret == NULL) {
-        ret = new Account(cValue, this);
-        ret->toggle("enableAccount", m_settings.enabled);
+        ret = new Account(cValue, url, this);
+        ret->toggle("enablePlugin", m_pluginSettings.enabled);
+        connect(ret, SIGNAL(playerFound()), this, SLOT(hasPlayer()));
         m_accounts.append(ret);
     }
     return(ret);
@@ -120,11 +125,12 @@ void BattleKnight::loadFinished(QWebPage* page)
     if(cValue.isEmpty()) return;
 
     // look for an account with that cookie
-    Account *current = accFromCookie(QString(cValue));
+    Account *current = accFromCookie(QString(cValue), url);
 
     injectHtml(page->mainFrame(), current);
 
     page->mainFrame()->addToJavaScriptWindowObject("account", current);
+    page->mainFrame()->addToJavaScriptWindowObject("console",&m_console);
 
     current->loadFinished(page);
 
@@ -149,7 +155,7 @@ void BattleKnight::replyFinished(QNetworkReply* reply)
     if(cValue.isEmpty()) return;
 
     // look for an account with that cookie
-    Account *current = accFromCookie(QString(cValue));
+    Account *current = accFromCookie(QString(cValue), url);
 
     current->replyFinished(reply);
 
@@ -158,29 +164,10 @@ void BattleKnight::replyFinished(QNetworkReply* reply)
     logString.append(now.toString("[yyyy-MM-dd HH:mm:ss]"));
     logString.append("  "+name()+"::replyFinished (" + url.path());
     logString.append(")");
+    if(url.query().length() > 0) logString.append(",\n\t  GET:'"+url.query()+"'");
     QByteArray post = reply->property("postData").toByteArray();
-    if(post.length() > 0) logString.append(", POST:'"+post+"'");
+    if(post.length() > 0) logString.append(",\n\t POST:'"+post+"'");
     qDebug() << logString;
-}
-
-int BattleKnight::readDataFile(const QString file, QString& data)
-{
-    QFile inject;
-    inject.setFileName(m_settings.templatePath + file);
-    if(!inject.open(QIODevice::ReadOnly)) {
-        inject.setFileName(":/"+name().toLower()+"/" + file);
-        if(!inject.open(QIODevice::ReadOnly)) {
-            return(-1);
-        }
-    }
-    if(inject.isOpen()) {
-        QByteArray bytes = inject.readAll();
-        inject.close();
-        data.truncate(0);
-        data.append(bytes);
-        return(data.length());
-    }
-    return(-1);
 }
 
 void BattleKnight::injectHtml(QWebFrame* mainFrame, Account*)

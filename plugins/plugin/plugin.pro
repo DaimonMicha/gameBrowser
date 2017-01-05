@@ -9,7 +9,7 @@ CONFIG          += plugin
 
 include(../../global.pri)
 
-DEFINES         += QT_NO_DEBUG_OUTPUT
+#DEFINES         += QT_NO_DEBUG_OUTPUT
 
 QT              += widgets network webkit webkitwidgets
 
@@ -27,6 +27,7 @@ HEADERS         += \
 OTHER_FILES     += \
                 htmls/inject.css \
                 htmls/inject.html \
+                htmls/gamescript.js \
                 htmls/checkscript.js
 
 RESOURCES       += \

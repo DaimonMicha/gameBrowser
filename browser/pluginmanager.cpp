@@ -13,13 +13,18 @@
 PluginManager::PluginManager(QObject *parent) :
     QObject(parent)
 {
+    // Create seed for the random
+    // That is needed only once on application startup
+    QTime time = QTime::currentTime();
+    qsrand((uint)time.msec());
+
     QSettings settings;
     settings.beginGroup(QLatin1String("PluginManager"));
     m_pluginPath = settings.value(QLatin1String("pluginsDir"), qApp->applicationDirPath() + "/plugins").toString();
     settings.endGroup();
     listPlugins();
     connect(BrowserApplication::networkAccessManager(), SIGNAL(finished(QNetworkReply*)), this, SLOT(replyFinished(QNetworkReply*)));
-    qDebug() << "PluginManager::PluginManager" << m_pluginFiles.count();
+    //qDebug() << "PluginManager::PluginManager" << m_pluginFiles.count();
 }
 
 void PluginManager::loadSettings()
@@ -32,7 +37,7 @@ void PluginManager::loadSettings()
         i.key()->loadSettings(settings);
     }
     settings.endGroup();
-    qDebug() << "PluginManager::loadSettings" << m_pluginsMap.count();
+    //qDebug() << "PluginManager::loadSettings" << m_pluginsMap.count();
 }
 
 void PluginManager::saveSettings()
@@ -48,6 +53,26 @@ void PluginManager::saveSettings()
     }
 
     settings.endGroup();
+}
+
+void PluginManager::saveState()
+{
+    QSettings settings;
+    settings.beginGroup(QLatin1String("PluginManager"));
+    settings.setValue(QLatin1String("pluginsDir"), m_pluginPath);
+
+    QMapIterator<PluginInterface *, QString> i(m_pluginsMap);
+    while(i.hasNext()) {
+        i.next();
+        i.key()->saveState(settings);
+    }
+
+    settings.endGroup();
+}
+
+void PluginManager::pluginOptionsChanged()
+{
+    qDebug() << "PluginManager::pluginOptionsChanged";
 }
 
 void PluginManager::listPlugins()
@@ -93,7 +118,7 @@ void PluginManager::loadPlugins()
         loadPlugin(fileName);
         //qDebug() << "PluginManager::loadPlugins" << fileName;
     }
-    qDebug() << "PluginManager::loadPlugins" << m_pluginsMap.count();
+    //qDebug() << "PluginManager::loadPlugins" << m_pluginsMap.count();
 }
 
 void PluginManager::replyFinished(QNetworkReply* reply)

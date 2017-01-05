@@ -13,6 +13,7 @@ public:
 
     void loadSettings();
     void saveSettings();
+    void saveState();
 
     void loadPlugins();
 
@@ -25,6 +26,8 @@ signals:
 public slots:
     void replyFinished(QNetworkReply*);
     void loadFinished(QWebPage*);
+
+    void pluginOptionsChanged();
 
 private:
     QString             m_pluginPath;

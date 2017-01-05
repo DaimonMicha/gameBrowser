@@ -202,6 +202,7 @@ QByteArray BrowserMainWindow::saveState(bool withTabs) const
         stream << tabWidget()->saveState();
     else
         stream << QByteArray();
+
     return data;
 }
 

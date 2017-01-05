@@ -16,23 +16,19 @@ public:
 
     QString name() const { return(QLatin1String("Plugin")); }
     QWidget* settingsWidget() const { return(new QWidget()); }
-    bool isMyUrl(const QUrl &) const;
 
-    void initPlugin();
     void loadSettings(QSettings &);
     void saveSettings(QSettings &);
+    void saveState(QSettings &);
 
     void replyFinished(QNetworkReply*);
     void loadFinished(QWebPage*);
 
 private:
     Account *accFromCookie(const QString);
-    int readDataFile(const QString file, QString& data);
     void injectHtml(QWebFrame*, Account*);
 
 private:
-    PluginSettings              m_settings;
-    QStringList                 m_excludeExtensions;
     QList<Account *>            m_accounts;
 };
 
