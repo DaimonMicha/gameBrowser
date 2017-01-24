@@ -10,6 +10,38 @@
 
 #include <QDebug>
 
+
+
+
+jsConsole::jsConsole(QObject *parent) :
+    QObject(parent)
+{
+}
+
+void jsConsole::log(const QVariant& data)
+{
+    qDebug() << "jsConsole::log:" << data.toByteArray();
+}
+
+void jsConsole::info(const QVariant& data)
+{
+    qDebug() << "jsConsole::info:" << data.toByteArray();
+}
+
+void jsConsole::warn(const QVariant& data)
+{
+    qDebug() << "jsConsole::warn:" << data.toByteArray();
+}
+
+void jsConsole::debug(const QVariant& data)
+{
+    qDebug() << "jsConsole::debug:" << data.toByteArray();
+}
+
+
+
+
+
 PluginManager::PluginManager(QObject *parent) :
     QObject(parent)
 {
@@ -135,6 +167,7 @@ void PluginManager::replyFinished(QNetworkReply* reply)
 
 void PluginManager::loadFinished(QWebPage* page)
 {
+    page->mainFrame()->addToJavaScriptWindowObject("console",&m_console);
     QUrl url = page->mainFrame()->url();
     QMapIterator<PluginInterface *, QString> i(m_pluginsMap);
     while(i.hasNext()) {

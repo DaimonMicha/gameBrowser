@@ -16,6 +16,22 @@
 #include <QDebug>
 
 
+
+
+/*
+ *
+ * Profile:  knight_id, health
+ * Checkers: Account, Duels, Missions, GroupMissions, ClanWar, Turnier
+ * Timer:    mission, groupmission, treasury, karma, manor, clanwar (round), turnier (round)
+ * Player:
+ * Report:   duel, turnier, clanwar (rounds?)
+ * Item:     hinweise
+ *
+ */
+
+
+
+
 Account::Account(const QString cookie, const QUrl url, QObject *parent) :
     QObject(parent),
     m_cookieValue(cookie),
@@ -186,7 +202,7 @@ void Account::setStatus(const QVariant data)
         if(module == "treasury") {
             if(o.contains("waitTime")) {
                 if(o.value("waitTime").toInt() != 0) {
-                    m_accStatus.insert("timerTreasuryEST", QJsonValue((qint64) now.addSecs(o.value("waitTime").toInt()).toTime_t()));
+                    m_accStatus.insert("timerTreasuryEST", QJsonValue((qint64) now.addSecs(o.value("waitTime").toInt()+1).toTime_t()));
                     m_accStatus.insert("timerTreasuryDuration", QJsonValue((qint64) 21600));
                 } else {
                     m_accStatus.remove("timerTreasuryEST");
@@ -196,10 +212,16 @@ void Account::setStatus(const QVariant data)
         }
     }
 
+    if(o.contains("battle_round")) {
+        m_accStatus.insert("battle_round", o.value("battle_round"));
+        m_accStatus.insert("timerBattleEST", QJsonValue((qint64) now.addSecs(o.value("waitTime").toInt()+1).toTime_t()));
+        m_accStatus.insert("timerBattleDuration", QJsonValue((qint64) o.value("waitDuration").toInt()));
+    }
+
     qDebug() << parent()->metaObject()->className() << "Account::setStatus" << json.toJson().constData();
 }
 
-QVariant Account::status(const QString key) const
+QVariant Account::status(const QString key)
 {
     QVariant ret;
 
@@ -266,8 +288,8 @@ void Account::loadFinished(QWebPage* page)
     BattleKnight* plugin = qobject_cast<BattleKnight *>(parent());
     if(plugin) {
         QString script;
-        plugin->readDataFile("locations.json",script);
-        mainFrame->evaluateJavaScript(script.prepend("var km_locations=").append(";"));
+        //plugin->readDataFile("locations.json",script);
+        //mainFrame->evaluateJavaScript(script.prepend("var km_locations=").append(";"));
         plugin->readDataFile("checkscript.js",script);
         mainFrame->evaluateJavaScript(script);
     } else {
@@ -414,8 +436,9 @@ buyItem: "{"result":true,"reason":"","data":{"item":{"item_id":4785682,"item_lev
             }
         }
     } else if(paths.at(0) == QString("clanwar")) {
-        if(paths.count() > 1 && paths.at(1) == QString("battle")) {
-            qDebug() << "clanwar/battle:" << reply->property("getData").toByteArray();
+        if(paths.count() > 1 && paths.at(1) == QString("getDamageData")) {
+            QJsonDocument json = QJsonDocument::fromJson(reply->property("getData").toByteArray());
+            qDebug() << "clanwar/getDamageData:\n" << json.toJson();
         }
     } else if(paths.at(0) == QString("world")) {
         if(paths.count() > 1 && paths.at(1) == QString("location")) {

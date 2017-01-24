@@ -8,16 +8,6 @@
 
 
 
-class jsConsole : public QObject
-{
-    Q_OBJECT
-public:
-    jsConsole(QObject *parent = 0);
-
-public slots:
-    void log(const QByteArray&);
-};
-
 class BattleKnight : public QObject, public PluginInterface
 {
     Q_OBJECT
@@ -46,8 +36,9 @@ private slots:
 
 private:
     QList<Account *>            m_accounts;
+    QList<QPointer<QWebPage> >  m_webPages;
+
     QJsonObject                 m_accountStates;
-    jsConsole                   m_console;
 };
 
 #endif // BATTLEKNIGHT_H

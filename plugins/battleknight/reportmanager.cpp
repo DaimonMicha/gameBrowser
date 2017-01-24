@@ -35,7 +35,7 @@ void ReportManager::checkReport(const QVariant data)
 
     QJsonObject content = json.object().value("mail_content").toObject();
     QString fightType = content.value("fight_type").toString();
-    if(fightType == "duel" || fightType == "joust") {
+    if(fightType == "duel" || fightType == "joust" || fightType == "warfight") {
         m_workList.append(json);
         if(!isWorking && !s_workingTimer->isActive()) s_workingTimer->start(100);
     }

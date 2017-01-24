@@ -1,6 +1,7 @@
 
 
 <div id="accountPlugin">
+
     <!-- Account -->
     <div id="kmAccount" class="kmTopic">
         <table id="accountTable">
@@ -14,54 +15,10 @@
                 <tr><td colspan="2" id="km_knightName"></td></tr>
                 <tr><td colspan="2"></td></tr>
                 <tr><td colspan="2" id="kmTreasuryTimer"></td></tr>
-                <tr><td></td><td class="kmHeader"><span id="km_location"></span></td></tr>
+                <!-- <tr><td></td><td class="kmHeader"><span id="km_location"></span></td></tr> -->
             </tbody>
         </table> <!-- #accountTable -->
     </div> <!-- #kmAccount -->
-
-    <!-- Mission -->
-    <div id="kmMissions" class="kmTopic">
-        <table id="missionsTable">
-            <thead>
-                <tr>
-                    <th class="kmHeader"><input class="kmChecker kmOptions" id="enableMissions" type="checkbox" title="darf ich automatisch Missionen machen?"></input></th>
-                    <th class="kmHeader"><label for="enableMissions" title="darf ich automatisch Missionen machen?">Missionen</label></th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr><td id="km_missionPoints" align="right"></td><td>Missionspunkte</td></tr>
-            </tbody>
-        </table> <!-- #missionsTable -->
-    </div> <!-- #kmMissions -->
-
-    <!-- GroupMission -->
-    <div id="kmGM" class="kmTopic">
-        <table id="gmTable">
-            <thead>
-                <tr>
-                    <th class="kmHeader"><input class="kmChecker kmOptions" id="enableGM" type="checkbox" title="darf ich automatisch GM machen?"></input></th>
-                    <th class="kmHeader"><label for="enableGM" title="darf ich automatisch GM machen?">GM</label></th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr><td id="km_gmPoints" align="right"></td><td>Missionspunkte</td></tr>
-            </tbody>
-        </table> <!-- #gmTable -->
-    </div> <!-- #kmGM -->
-
-    <!-- ClanWar -->
-    <div id="kmClanWar" class="kmTopic">
-        <table id="cwTable">
-            <thead>
-                <tr>
-                    <th class="kmHeader"><input class="kmChecker kmOptions" id="enableClanWar" type="checkbox" title="darf ich im Ordenskrieg mitmischen?"></input></th>
-                    <th class="kmHeader"><label for="enableClanWar" title="darf ich im Ordenskrieg mitmischen?">Ordenskrieg</label></th>
-                </tr>
-            </thead>
-            <tbody>
-            </tbody>
-        </table> <!-- #cwTable -->
-    </div> <!-- #kmClanWar -->
 
     <!-- Duel -->
     <div id="kmDuels" class="kmTopic">
@@ -77,64 +34,66 @@
         </table> <!-- #duelTable -->
     </div> <!-- #duels -->
 
-    <!-- Turnier -->
-    <div id="kmTurnier" class="kmTopic">
-        <table id="turnierTable">
+    <!-- ModulTemplate -->
+    <div id="ModulTemplate" class="kmTopic nodisplay">
+        <table>
             <thead>
                 <tr>
-                    <th class="kmHeader"><input class="kmChecker kmOptions" id="enableTurnier" type="checkbox" title="darf ich im Turnier mitmischen?"></input></th>
-                    <th class="kmHeader"><label for="enableTurnier" title="darf ich im Turnier mitmischen?">Turnier</label></th>
+                    <th class="kmHeader"><input class="kmChecker kmOptions"  id="enableModule" type="checkbox" title="mach mich an!"></input></th>
+                    <th class="kmHeader"><label for="enableModule" title="mach mich an!">Klick Meister</label></th>
                 </tr>
             </thead>
             <tbody>
             </tbody>
-        </table> <!-- #turnierTable -->
-    </div> <!-- #kmTurnier -->
+        </table>
+    </div> <!-- #ModulTemplate -->
 
 </div> <!-- #accountPlugin -->
 
-    <table id="kmZonesTable" class="nodisplay" style="font-size: 12px;">
+<div id="kmZonesResult" class="nodisplay" style="position: absolute; top: 25px; max-width: 205px;">
+    <table id="kmZonesTable" style="font-size: 12px; background: none;">
         <thead>
             <tr>
-                <th width="12px">#</th>
+                <th style="text-align: center; width: 13px;">#</th>
                 <th style="text-align: right;">Schlag</th>
-                <th style="text-align: center;" width="15px"> - </th>
-                <th>Block</th>
+                <th style="text-align: center; width: 11px;"> - </th>
+                <th style="text-align: left;">Block</th>
             </tr>
         </thead>
         <tbody>
             <tr>
                 <td>1) </td>
-                <td align="right"></td>
+                <td style="text-align: right;"></td>
                 <td align="center"> - </td>
-                <td></td>
+                <td style="text-align: left;"></td>
             </tr>
             <tr>
                 <td>2) </td>
-                <td align="right"></td>
+                <td style="text-align: right;"></td>
                 <td align="center"> - </td>
-                <td></td>
+                <td style="text-align: left;"></td>
             </tr>
             <tr>
                 <td>3) </td>
-                <td align="right"></td>
+                <td style="text-align: right;"></td>
                 <td align="center"> - </td>
-                <td></td>
+                <td style="text-align: left;"></td>
             </tr>
             <tr>
                 <td>4) </td>
-                <td align="right"></td>
+                <td style="text-align: right;"></td>
                 <td align="center"> - </td>
-                <td></td>
+                <td style="text-align: left;"></td>
             </tr>
             <tr>
                 <td>5) </td>
-                <td align="right"></td>
+                <td style="text-align: right;"></td>
                 <td align="center"> - </td>
-                <td></td>
+                <td style="text-align: left;"></td>
             </tr>
         </tbody>
     </table>
+</div>
 
 <div id="km_squeezeContent" class="nodisplay">
         <div id="modal_kmKnight" class="sbox-medium kmSqueeze">

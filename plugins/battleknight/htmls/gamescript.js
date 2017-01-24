@@ -26,27 +26,87 @@ function randInt(low, high) {
     return(Math.floor(Math.random() * (high - low + 1)) + low);
 }
 
-var kmCheckerModule = function() {
+var kmTextoutModule = function() {
+    this.options = {
+        template: 'kmZonesResult',
+        selector: 'fightResults',
+        position: 'left',
+        knight_id: 0,
+        onCheckAll: function() {
+            //console.log(this.name+': Check for ' + this.knight_id);
+            this.onCheck();
+        },
+        onCheck: function() {
+            if(!this.element) return;
+            var hits, defs;
+            hits = account.player(this.knight_id,'hitZones');
+            defs = account.player(this.knight_id,'defendZones');
+            if(hits !== this.hitZones || defs !== this.defZones) {
+                var table = this.element.getFirst('table');
+                if(!table) {
+                    this.element.set('text', soll);
+                } else {
+                    if(hits.length > 0 && defs.length > 0) {
+                        var hZones = JSON.parse(hits);
+                        var dZones = JSON.parse(defs);
+                        var rows = table.getFirst('tbody').getElements('tr');
+                        for(var c = 0;c < rows.length; ++c) {
+                            var cols = rows[c].getElements('td');
+                            var ist = cols[1].get('text');
+                            if(ist !== targetAreas.Attack[hZones[c]][1]) {
+                                cols[1].set('text', targetAreas.Attack[hZones[c]][1]);
+                                if(ist) cols[1].highlight();
+                            }
+                            ist = cols[3].get('text');
+                            if(ist !== targetAreas.Defend[dZones[c]][1]) {
+                                cols[3].set('text', targetAreas.Defend[dZones[c]][1]);
+                                if(ist) cols[3].highlight();
+                            }
+                        }
+                        //console.log(this.name+' hitZones\t:' + hits + ':' + defs);
+                    }
+                }
+                this.hitZones = hits;
+                this.defZones = defs;
+                //console.log(this.name+': Zones-Check for ' + this.knight_id);
+            }
+        }
+    };
     this.check = function(module) {
-    }
-    console.log('CREATE Object('+this.name+'): '+JSON.stringify(arguments));
+        if(typeof(this.options.onCheck) === 'function') {
+            this.options.onCheck();
+            //console.log(JSON.stringify(typeof(this))+', '+JSON.stringify('onCheck'+module));
+        }
+    };
+    this.initialize = function(options) {
+        var props = Object.getOwnPropertyNames(options);
+        for(var i = 0; i < props.length; ++i) {
+            this.options[props[i]] = options[props[i]];
+        }
+        var el = document.id(this.options.template);
+        if(!el) return;
+        var resultDiv = document.getElement('div.'+this.options.selector);
+        if(!resultDiv) return;
+
+        el = el.clone();
+        el.set('id','km'+this.options.name+'Textout');
+        el.setStyle('float',this.options.position);
+        if(this.options.position === 'left') {
+            el.setStyles({'left':'0px','text-align':'right'});
+        } else if(this.options.position === 'right') {
+            el.setStyles({'right':'0px','text-align':'left'});
+        }
+
+        el.inject(resultDiv);
+        el.removeClass('nodisplay');
+        this.options.element = el;
+
+    };
+    this.initialize(arguments['0']);
+    //console.log('CREATE kmTextoutModule('+this.options.name+'): '+JSON.stringify(arguments['0']));
 }
-/*
-var module = new kmParserModule('Aggressor',{'container':'kmAggressorResult','knight_id':status.knight_id});
-module.onCheck = function(module) {
-    var container = document.id(this.options.container);
-    var ist, soll;
-    var defId = container.retrieve('knight_id');
-    soll = account.player(defId,'hitZones');
-    ist = container.retrieve('hitZones');
-    if(soll !== ist) {
-        //document.id('enable'+this.module_name).checked = soll;
-        container.set('text', soll);
-        container.store('hitZones', soll);
-        console.log(this.module_name+': Zones-Check for ' + defId);
-    }
-};
-*/
+
+
 var kmParserModule = function(myName, options) {
     this.module_name = myName || 'kmParserModule';
     this.options = {
@@ -137,59 +197,57 @@ var kM = kM || function() {
 
     this.gameModules = [];
 
-    //kmParserModule.prototype.initialize
+
+    /************************************************************
+     * Account Modul
+     ************************************************************/
     // @disable-check M307
-    var module = new kmParserModule('Account',{'container':'kmAccount','optionsClass':this.options.optionsClass});
-    module.onCheck = function(module) {
-        var ist, soll;
-        soll = account.isActive('enable'+this.module_name);
-        ist = document.id('enable'+this.module_name).checked;
-        if(soll !== ist) {
-            document.id('enable'+this.module_name).checked = soll;
-        }
-        // Knight's Name
-        soll = account.profile('knight_name');
-        ist = document.id('km_knightName').get('text');
-        if(soll !== ist) {
-            document.id('km_knightName').set('text', soll);
-            if(ist) document.id('km_knightName').highlight();
-        }
-        // Treasury Cooldown
-        soll = parseInt(account.status('timerTreasury'));
-        ist = parseInt(document.id('kmTreasuryTimer').retrieve('ist'));
-        if(soll !== ist) {
-            var values = countdown(soll);
-            document.id('kmTreasuryTimer').set('text', values.hours + ':' + values.minutes + ':' + values.seconds);
-            document.id('kmTreasuryTimer').store('ist', soll);
-            //if(ist) document.id('kmTreasuryTimer').highlight();
-        }
-        // Knight's Location
-        ist = document.id('km_location').get('text');
-        if(account.profile('location') && km_locations[account.profile('location')].title !== ist) {
-            document.id('km_location').set('text', km_locations[account.profile('location')].title);
-            if(ist) document.id('km_location').highlight();
-        }
-    };
-    this.gameModules.push(module);
+    this.gameModules.push(new kmUiCheckModule('kmAccount',{name:'Account'}));
+
+    /********************
+     * Knight's Name
+     ********************/
     // @disable-check M307
-    module = new kmParserModule('Missions',{'container':'kmMissions','optionsClass':this.options.optionsClass});
-    module.onCheck = function() {
-        var ist, soll;
-        soll = account.isActive('enable'+this.module_name);
-        ist = document.id('enable'+this.module_name).checked;
-        if(soll !== ist) {
-            document.id('enable'+this.module_name).checked = soll;
-        }
-        // Mission Points
-        soll = account.profile('missionPoints');
-        ist = document.id('km_missionPoints').get('text');
-        if(soll !== ist) {
-            document.id('km_missionPoints').set('text', soll);
-            if(ist) document.id('km_missionPoints').highlight();
-        }
-    };
-    this.gameModules.push(module);
+    this.gameModules.push(new kmUiTextModule('km_knightName',{name:'knight_name',knight_id:account.profile('knight_id')}));
+
+    /********************
+     * Treasury Cooldown
+     ********************/
     // @disable-check M307
+    this.gameModules.push(new kmUiTextModule('kmTreasuryTimer',{formatted:function(str){
+        str = parseInt(account.status(this.name));
+        if(isNaN(str)) return(this.textBevore + 'bereit.');
+        var values = countdown(str);
+        return(this.textBevore + values.hours + ':' + values.minutes + ':' + values.seconds);
+    },name:'timerTreasury',knight_id:account.profile('knight_id'),textBevore:'Schatzkammer: ',highlight:false}));
+
+    /********************
+     * Knight's Location
+     ********************/
+    // @disable-check M307
+    this.gameModules.push(new kmUiTextModule('km_location',{formatted:function(str){
+        if(account.profile(this.name)) str = km_locations[account.profile(this.name)].title;
+        return(str);
+    },name:'location',knight_id:account.profile('knight_id')}));
+
+
+
+    /************************************************************
+     * Missions Modul
+     ************************************************************/
+    // @disable-check M307
+    //this.gameModules.push(new kmUiCheckModule('kmMissions',{name:'Missions'}));
+
+    /********************
+     * Mission Points
+     ********************/
+    // @disable-check M307
+    //this.gameModules.push(new kmUiTextModule('km_missionPoints',{name:'missionPoints',knight_id:account.profile('knight_id')}));
+
+
+
+    // @disable-check M307
+/*
     module = new kmParserModule('GM',{'container':'kmGM','optionsClass':this.options.optionsClass});
     module.onCheck = function() {
         var ist, soll;
@@ -207,8 +265,9 @@ var kM = kM || function() {
         }
     };
     this.gameModules.push(module);
+*/
     // @disable-check M307
-    module = new kmParserModule('ClanWar',{'container':'kmClanWar','optionsClass':this.options.optionsClass});
+/*    module = new kmParserModule('ClanWar',{'container':'kmClanWar','optionsClass':this.options.optionsClass});
     module.onCheck = function() {
         var ist, soll;
         soll = account.isActive('enable'+this.module_name);
@@ -217,7 +276,7 @@ var kM = kM || function() {
             document.id('enable'+this.module_name).checked = soll;
         }
     };
-    this.gameModules.push(module);
+    this.gameModules.push(module); */
     // @disable-check M307
     module = new kmParserModule('Duels',{'container':'kmDuels','optionsClass':this.options.optionsClass,'lastDuels':this.options.lastDuels});
     module.onCheck = function() {
@@ -298,7 +357,7 @@ var kM = kM || function() {
     };
     this.gameModules.push(module);
     // @disable-check M307
-    module = new kmParserModule('Turnier',{'container':'kmTurnier','optionsClass':this.options.optionsClass});
+/*    module = new kmParserModule('Turnier',{'container':'kmTurnier','optionsClass':this.options.optionsClass});
     module.onCheck = function() {
         var ist, soll;
         soll = account.isActive('enable'+this.module_name);
@@ -307,11 +366,10 @@ var kM = kM || function() {
             document.id('enable'+this.module_name).checked = soll;
         }
     };
-    this.gameModules.push(module);
+    this.gameModules.push(module); */
 
-    this.checkModules = function(module) {
-        var module = module || 'all';
-        this.gameModules.forEach(function(v){v.check(module);},this);
+    this.checkModules = function() {
+        this.gameModules.forEach(function(v){v.check();},this);
     }
 
     this.parseDocument();
@@ -630,11 +688,11 @@ kM.prototype.parseDocument = function() {
     /*
      * parses the document of location baseUrl()+"joust"
     */
-    parseJoust = function(paths) {
+    parseJoust = function(status, paths) {
         var path = paths.shift();
         var ret = {};
 
-        parseJoust = function() {
+        parseJoust = function(status) {
             var ret = {};
 
             return(ret);
@@ -644,7 +702,7 @@ kM.prototype.parseDocument = function() {
             case 'zones':
             case 'tent':
             default:
-                ret = parseJoust();
+                ret = parseJoust(status);
                 break;
         }
 
@@ -654,7 +712,7 @@ kM.prototype.parseDocument = function() {
     /*
      * parses the document of location baseUrl()+"clan"
     */
-    parseClan = function(paths) {
+    parseClan = function(status, paths) {
         var path = paths.shift();
         var ret = {};
 
@@ -697,14 +755,32 @@ kM.prototype.parseDocument = function() {
             return(ret);
         } // parseMembers
 
+        parseBattle = function(status) {
+            var rounds = document.id('mainContent').getElement('.battlerounds');
+            console.log(rounds.get('text').trim());
+            status.battle_round = rounds.get('text').trim().split(' ')[1];
+        }
+
+        parsePrepare = function(status) {
+            status.battle_round = 0;
+        } // parsePrepare
+
         switch(path) {
             case 'members':
                 ret = parseMembers();
+                break;
+            case 'fight':
+            case 'battle':
+                parseBattle(status);
+                break;
+            case 'prepare':
+                parsePrepare(status);
                 break;
             case 'upgrades':
             default:
                 break;
         }
+        status.submodule = path;
 
         return(ret);
     } // parseClan
@@ -839,69 +915,24 @@ kM.prototype.parseDocument = function() {
         status.fightResult = true;
         if(status.module !== 'duel') return;
 
-        var mainContent = document.id('mainContent');
-        var resultDiv = mainContent.getElement('div.fightResults');
-
-        var aggressorDiv = new Element('div', {'id': 'kmAggressorResult', 'class': 'kmKnightInfo'});
-        aggressorDiv.setStyles({'float':'left','width':'205px','height':'100%', 'border':'0px solid red','position':'absolute','display':'inline','top':'10px','text-align':'right','vertical-align':'bottom'});
-        aggressorDiv.inject(resultDiv,'top'); //oben einfügen
-        aggressorDiv.store('knight_id', status.knight_id);
-
         // @disable-check M307
-        var module = new kmParserModule('Aggressor',{'container':'kmAggressorResult','knight_id':status.knight_id});
-        module.onCheck = function(module) {
-            var container = document.id(this.options.container);
-            var ist, soll;
-            soll = account.player(this.options.knight_id,'hitZones');
-            ist = container.retrieve('hitZones');
-            if(soll !== ist) {
-                container.set('text', soll);
-                container.store('hitZones', soll);
-                console.log(this.module_name+': Zones-Check for ' + this.options.knight_id);
-            }
-        };
-        ret.push(module);
-
-        var defenderDiv = aggressorDiv.clone();
-        defenderDiv.set('id', 'kmDefenderResult');
-        defenderDiv.setStyles({'float':'right','right':'0px','top':'10px','text-align':'left'});
-        defenderDiv.inject(resultDiv);
-        defenderDiv.store('knight_id', status.defender);
-
-        var table = document.id('kmZonesTable').clone();
-        table.inject(defenderDiv);
-        table.removeClass('nodisplay');
-
+        ret.push(new kmTextoutModule(
+                    {
+                        name:'Aggressor',
+                        template: 'kmZonesResult',
+                        selector: 'fightResults',
+                        position: 'left',
+                        knight_id: status.knight_id
+                    }));
         // @disable-check M307
-        module = new kmParserModule('Defender',{'container':'kmDefenderResult','knight_id':status.defender});
-        module.onCheck = function(module) {
-            var container = document.id(this.options.container);
-            var hits, defs;
-            hits = account.player(this.options.knight_id,'hitZones');
-            defs = account.player(this.options.knight_id,'defendZones');
-            if(hits !== container.retrieve('hitZones') || defs !== container.retrieve('defZones')) {
-                var table = container.getFirst('table');
-                if(!table) {
-                    container.set('text', soll);
-                } else {
-                    if(hits.length > 0 && defs.length > 0) {
-                        var hZones = JSON.parse(hits);
-                        var dZones = JSON.parse(defs);
-                        var rows = table.getFirst('tbody').getElements('tr');
-                        for(var c = 0;c < rows.length; ++c) {
-                            var cols = rows[c].getElements('td');
-                            cols[1].set('text',targetAreas.Attack[hZones[c]][1]);
-                            cols[3].set('text',targetAreas.Defend[dZones[c]][1]);
-                        }
-                        console.log('hitZones\t:' + hits + ':' + defs);
-                    }
-                }
-                container.store('hitZones', hits);
-                container.store('defZones', defs);
-                console.log(this.module_name+': Zones-Check for ' + this.options.knight_id);
-            }
-        };
-        ret.push(module);
+        ret.push(new kmTextoutModule(
+                    {
+                        name:'Defender',
+                        template: 'kmZonesResult',
+                        selector: 'fightResults',
+                        position: 'right',
+                        knight_id: status.defender
+                    }));
 
         return(ret);
     } // parseFightResult
@@ -935,10 +966,11 @@ kM.prototype.parseDocument = function() {
             this.data.status = parseDuel(status, paths);
             break;
         case 'joust':
-            this.data.status = parseJoust(paths);
+            this.data.status = parseJoust(status, paths);
             break;
         case 'clan':
-            this.data.status = parseClan(paths);
+        case 'clanwar':
+            this.data.status = parseClan(status, paths);
             break;
         case 'manor':
             this.data.status = parseManor(paths);
@@ -973,9 +1005,26 @@ kM.prototype.parseDocument = function() {
     //console.log('parseDocument :'+JSON.stringify(status));
     account.setStatus(status);
 
-    //var test = new kmCheckerModule({'name':'Aggressor','element':'kmDefenderResult'});
-    //console.log(JSON.stringify(typeof(test))+', '+JSON.stringify(test));
+/*
+        template: 'kmZonesResult',
+        selector: 'fightResults',
+        position: 'left',
+        knight_id: 0
+*/
+/*
+    // @disable-check M307
+    var test = new kmTextoutModule(
+                {
+                    name:'Defender',
+                    template: 'kmZonesResult',
+                    selector: 'fightResults',
+                    position: 'right',
+                    knight_id: status.defender
+                });
 
+    test.check('Zones');
+    this.gameModules.push(test);
+*/
     //var zones = JSON.parse(account.player(status.knight_id,'hitZones'));
     //console.log(typeof(zones)+', '+zones[0]);
 

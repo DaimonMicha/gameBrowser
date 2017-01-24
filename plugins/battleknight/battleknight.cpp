@@ -1,4 +1,5 @@
 #include "battleknight.h"
+#include "accountui.h"
 
 #include <QRegExp>
 #include <QFile>
@@ -10,18 +11,6 @@
 #include <QtGui/QDesktopServices>
 
 #include <QDebug>
-
-
-
-jsConsole::jsConsole(QObject *parent) :
-    QObject(parent)
-{
-}
-
-void jsConsole::log(const QByteArray& data)
-{
-    qDebug() << "jsConsole::log:" << data;
-}
 
 
 
@@ -130,8 +119,17 @@ void BattleKnight::loadFinished(QWebPage* page)
     injectHtml(page->mainFrame(), current);
 
     page->mainFrame()->addToJavaScriptWindowObject("account", current);
-    page->mainFrame()->addToJavaScriptWindowObject("console",&m_console);
 
+    for(int i = m_webPages.count() - 1;i >= 0; --i) {
+        if(m_webPages.at(i).isNull()) m_webPages.removeAt(i);
+    }
+    if(!m_webPages.contains(page)) {
+        new accountUI(current, page);
+        m_webPages.append(page);
+    }
+
+    accountUI* ui = page->findChild<accountUI *>(QString(),Qt::FindDirectChildrenOnly);
+    if(ui) ui->inject();
     current->loadFinished(page);
 
     QString logString;
@@ -139,6 +137,7 @@ void BattleKnight::loadFinished(QWebPage* page)
     logString.append(now.toString("[yyyy-MM-dd HH:mm:ss]"));
     logString.append("  "+name()+"::loadFinished (" + url.path());
     logString.append(") '" + page->mainFrame()->title() + "'");
+    logString.append(QString(", %1 Pages.").arg(m_webPages.count()));
     qDebug() << logString;
 }
 
@@ -205,4 +204,9 @@ void BattleKnight::injectHtml(QWebFrame* mainFrame, Account*)
         return;
     }
     mainFrame->evaluateJavaScript(di);
+
+    if(readDataFile("locations.json", di) <= 0) {
+        return;
+    }
+    mainFrame->evaluateJavaScript(di.prepend("var km_locations=").append(";"));
 }

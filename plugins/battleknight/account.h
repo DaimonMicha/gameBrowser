@@ -99,7 +99,7 @@ public:
     Q_INVOKABLE QString profile(const QString key) const;
     Q_INVOKABLE QString player(const QString id, const QString key) const;
     Q_INVOKABLE QString reports(const int count, const QString type) const;
-    Q_INVOKABLE QVariant status(const QString key) const;
+    Q_INVOKABLE QVariant status(const QString key);
 
     void loadFinished(QWebPage*);
     void replyFinished(QNetworkReply*);
