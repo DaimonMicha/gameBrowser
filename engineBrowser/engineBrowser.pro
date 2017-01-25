@@ -1,13 +1,19 @@
-TEMPLATE = app
+TEMPLATE         = app
 
-DESTDIR = ../
-TARGET = gameBrowser
+DESTDIR          = ../
+TARGET           = gameBrowser
 
-QT += webenginewidgets network widgets printsupport
-CONFIG += c++11
+QT              += webenginewidgets network widgets printsupport
+CONFIG          += c++11
 
 qtHaveModule(uitools):!embedded: QT += uitools
 else: DEFINES += QT_NO_UITOOLS
+
+include(../global.pri)
+
+INCLUDEPATH     += ../include
+
+#DEFINES         += QT_NO_DEBUG_OUTPUT
 
 FORMS += \
     addbookmarkdialog.ui \
@@ -86,7 +92,7 @@ win32 {
 mac {
     ICON = demobrowser.icns
     QMAKE_INFO_PLIST = Info_mac.plist
-    TARGET = Demobrowser
+    TARGET = engineBrowser
 }
 
 EXAMPLE_FILES = \

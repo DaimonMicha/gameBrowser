@@ -1,8 +1,8 @@
-INCLUDEPATH     += ../../browser
+INCLUDEPATH     += ../../include
 
 MOC_DIR          = .moc
 OBJECTS_DIR      = .obj
 
-*-g++* {
-    QMAKE_CXXFLAGS += -std=c++11
-}
+CONFIG          += c++11
+
+QT              += webenginewidgets

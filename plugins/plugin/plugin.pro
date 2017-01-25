@@ -11,7 +11,7 @@ include(../../global.pri)
 
 #DEFINES         += QT_NO_DEBUG_OUTPUT
 
-QT              += widgets network webkit webkitwidgets
+QT              += widgets network
 
 DESTDIR          = ../
 TARGET           = plugin

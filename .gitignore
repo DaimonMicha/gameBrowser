@@ -2,4 +2,5 @@
 *.user
 *.geany
 *.autosave
+.gitignore
 .data/
