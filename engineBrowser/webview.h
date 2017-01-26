@@ -65,6 +65,7 @@ QT_END_NAMESPACE
 class BrowserMainWindow;
 class WebPage : public QWebEnginePage {
     Q_OBJECT
+
 public:
     WebPage(QWebEngineProfile *profile, QObject *parent = 0);
     BrowserMainWindow *mainWindow();

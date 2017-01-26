@@ -106,6 +106,7 @@ QT_END_NAMESPACE
 class DownloadManager : public QDialog, public Ui_DownloadDialog
 {
     Q_OBJECT
+
     Q_PROPERTY(RemovePolicy removePolicy READ removePolicy WRITE setRemovePolicy)
 
 public:

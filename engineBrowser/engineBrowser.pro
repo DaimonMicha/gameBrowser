@@ -13,6 +13,7 @@ include(../global.pri)
 
 INCLUDEPATH     += ../include
 
+#DEFINES         += QWEBENGINEPAGE_UNSUPPORTEDCONTENT
 #DEFINES         += QT_NO_DEBUG_OUTPUT
 
 FORMS += \
@@ -51,7 +52,8 @@ HEADERS += \
     toolbarsearch.h \
     urllineedit.h \
     webview.h \
-    xbel.h
+    xbel.h \
+    profilemanager.h
 
 SOURCES += \
     autosaver.cpp \
@@ -76,7 +78,8 @@ SOURCES += \
     urllineedit.cpp \
     webview.cpp \
     xbel.cpp \
-    main.cpp
+    main.cpp \
+    profilemanager.cpp
 
 RESOURCES += data/data.qrc htmls/htmls.qrc
 

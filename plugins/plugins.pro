@@ -1,7 +1,7 @@
 TEMPLATE         = subdirs
 
 SUBDIRS         += \
-                plugin \
+#                plugin \
 #                chicago1920 \
 #                battleknight \
 #                ogame

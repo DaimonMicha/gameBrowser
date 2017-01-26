@@ -199,6 +199,7 @@ QObject *WebPage::createPlugin(const QString &classId, const QUrl &url, const QS
 #endif // !defined(QT_NO_UITOOLS)
 
 #if defined(QWEBENGINEPAGE_UNSUPPORTEDCONTENT)
+
 void WebPage::handleUnsupportedContent(QNetworkReply *reply)
 {
     QString errorString = reply->errorString();
@@ -250,6 +251,7 @@ void WebPage::handleUnsupportedContent(QNetworkReply *reply)
         mainFrame()->setHtml(html, reply->url());
     }
 }
+
 #endif
 
 void WebPage::authenticationRequired(const QUrl &requestUrl, QAuthenticator *auth)

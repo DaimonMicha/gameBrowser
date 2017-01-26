@@ -8,7 +8,9 @@
 class Plugin : public QObject, public PluginInterface
 {
     Q_OBJECT
+
     Q_PLUGIN_METADATA(IID "de.daimonnetwork.gameBrowser.PluginInterface" FILE "plugin.json")
+
     Q_INTERFACES(PluginInterface)
 
 public:
@@ -22,7 +24,7 @@ public:
     void saveState(QSettings &);
 
     void replyFinished(QNetworkReply*);
-    void loadFinished(QWebPage*);
+    void loadFinished(QWebEnginePage*);
 
 private:
     Account *accFromCookie(const QString);

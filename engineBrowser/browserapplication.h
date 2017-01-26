@@ -71,6 +71,8 @@ class BrowserMainWindow;
 class CookieJar;
 class DownloadManager;
 class HistoryManager;
+class ProfileManager;
+
 class BrowserApplication : public QApplication
 {
     Q_OBJECT
@@ -96,6 +98,7 @@ public:
     static DownloadManager *downloadManager();
     static QNetworkAccessManager *networkAccessManager();
     static BookmarksManager *bookmarksManager();
+    static ProfileManager *profileManager();
 
 #if defined(Q_OS_OSX)
     bool event(QEvent *event);
@@ -125,6 +128,7 @@ private:
     static DownloadManager *s_downloadManager;
     static QNetworkAccessManager *s_networkAccessManager;
     static BookmarksManager *s_bookmarksManager;
+    static ProfileManager *s_profileManager;
 
     QList<QPointer<BrowserMainWindow> > m_mainWindows;
     QLocalServer *m_localServer;

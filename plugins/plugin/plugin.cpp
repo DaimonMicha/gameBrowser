@@ -123,9 +123,9 @@ void Plugin::replyFinished(QNetworkReply* reply)
     qDebug() << logString;
 }
 
-void Plugin::loadFinished(QWebPage* page)
+void Plugin::loadFinished(QWebEnginePage* page)
 {
-    QUrl url = page->mainFrame()->url();
+    QUrl url = page->url();
 
     QList<QNetworkCookie> cookies = page->networkAccessManager()->cookieJar()->cookiesForUrl(url);
     QByteArray cValue;

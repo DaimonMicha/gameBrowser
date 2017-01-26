@@ -57,6 +57,7 @@
 #include "history.h"
 #include "tabwidget.h"
 #include "webview.h"
+#include "profilemanager.h"
 
 #include <QtCore/QBuffer>
 #include <QtCore/QDir>
@@ -85,6 +86,7 @@ DownloadManager *BrowserApplication::s_downloadManager = 0;
 HistoryManager *BrowserApplication::s_historyManager = 0;
 QNetworkAccessManager *BrowserApplication::s_networkAccessManager = 0;
 BookmarksManager *BrowserApplication::s_bookmarksManager = 0;
+ProfileManager *BrowserApplication::s_profileManager = 0;
 
 static void setUserStyleSheet(QWebEngineProfile *profile, const QString &styleSheet, BrowserMainWindow *mainWindow = 0)
 {
@@ -104,11 +106,11 @@ static void setUserStyleSheet(QWebEngineProfile *profile, const QString &styleSh
         script.setWorldId(QWebEngineScript::ApplicationWorld);
     }
     QString source = QString::fromLatin1("(function() {"\
-                                         "var css = document.getElementById(\"_qt_testBrowser_userStyleSheet\");"\
+                                         "var css = document.getElementById(\"_qt_gameBrowser_userStyleSheet\");"\
                                          "if (css == undefined) {"\
                                          "    css = document.createElement(\"style\");"\
                                          "    css.type = \"text/css\";"\
-                                         "    css.id = \"_qt_testBrowser_userStyleSheet\";"\
+                                         "    css.id = \"_qt_gameBrowser_userStyleSheet\";"\
                                          "    document.head.appendChild(css);"\
                                          "}"\
                                          "css.innerText = \"%1\";"\
@@ -127,11 +129,15 @@ BrowserApplication::BrowserApplication(int &argc, char **argv)
     , m_privateProfile(0)
     , m_privateBrowsing(false)
 {
-    QCoreApplication::setOrganizationName(QLatin1String("Qt"));
-    QCoreApplication::setApplicationName(QLatin1String("demobrowser"));
-    QCoreApplication::setApplicationVersion(QLatin1String("0.1"));
+    QCoreApplication::setOrganizationName(QLatin1String("DaimonNetworks"));
+    QCoreApplication::setApplicationName(QLatin1String("gameBrowser"));
+    QCoreApplication::setApplicationVersion(QLatin1String("0.2"));
+
     QString serverName = QCoreApplication::applicationName()
         + QString::fromLatin1(QT_VERSION_STR).remove('.') + QLatin1String("webengine");
+
+    qDebug() << serverName << "starting.";
+
     QLocalSocket socket;
     socket.connectToServer(serverName);
     if (socket.waitForConnected(500)) {
@@ -149,10 +155,8 @@ BrowserApplication::BrowserApplication(int &argc, char **argv)
 #endif
 
     m_localServer = new QLocalServer(this);
-    connect(m_localServer, SIGNAL(newConnection()),
-            this, SLOT(newLocalSocketConnection()));
-    if (!m_localServer->listen(serverName)
-            && m_localServer->serverError() == QAbstractSocket::AddressInUseError) {
+    connect(m_localServer, SIGNAL(newConnection()), this, SLOT(newLocalSocketConnection()));
+    if(!m_localServer->listen(serverName) && m_localServer->serverError() == QAbstractSocket::AddressInUseError) {
         QLocalServer::removeServer(serverName);
         if (!m_localServer->listen(serverName))
             qWarning("Could not create local socket %s.", qPrintable(serverName));
@@ -192,6 +196,7 @@ BrowserApplication::~BrowserApplication()
     }
     delete s_networkAccessManager;
     delete s_bookmarksManager;
+    delete s_profileManager;
 }
 
 void BrowserApplication::lastWindowClosed()
@@ -542,6 +547,14 @@ BookmarksManager *BrowserApplication::bookmarksManager()
         s_bookmarksManager = new BookmarksManager;
     }
     return s_bookmarksManager;
+}
+
+ProfileManager *BrowserApplication::profileManager()
+{
+    if (!s_profileManager) {
+        s_profileManager = new ProfileManager;
+    }
+    return s_profileManager;
 }
 
 QIcon BrowserApplication::icon(const QUrl &url) const
