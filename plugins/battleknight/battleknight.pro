@@ -11,8 +11,6 @@ include(../../global.pri)
 
 #DEFINES         += QT_NO_DEBUG_OUTPUT
 
-QT              += widgets network webkit webkitwidgets
-
 DESTDIR          = ../
 TARGET           = battleknight
 

@@ -11,6 +11,7 @@ else: DEFINES += QT_NO_UITOOLS
 DEFINES         += QT_NO_DEBUG_OUTPUT
 
 include(../global.pri)
+INCLUDEPATH     += ../include
 
 
 FORMS           += \
@@ -38,7 +39,7 @@ HEADERS         += \
                 history.h \
                 modelmenu.h \
                 networkaccessmanager.h \
-                plugininterface.h \
+                ../include/plugininterface.h \
                 pluginmanager.h \
                 searchlineedit.h \
                 settings.h \
