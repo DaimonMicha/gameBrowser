@@ -9,7 +9,7 @@ CONFIG          += plugin
 
 include(../../global.pri)
 
-#DEFINES         += QT_NO_DEBUG_OUTPUT
+DEFINES         += QT_NO_DEBUG_OUTPUT
 
 DESTDIR          = ../
 TARGET           = battleknight

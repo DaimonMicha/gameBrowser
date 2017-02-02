@@ -8,13 +8,13 @@
     position: fixed;
     float: left;
     width: 175px;
-    top: 590px;
+    bottom: 25px;
     left: 5px;
     padding-right: 5px;
     text-align: left;
     font-family: "Ubuntu Condensed", Arial, sans-serif;
     font-size: 1.2em;
-    color: white;
+    color: grey;
     border: 1px solid yellow;
 }
 #klickMeisterLogo {

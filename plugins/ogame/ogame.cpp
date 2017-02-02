@@ -6,7 +6,9 @@
 #include <QWebElement>
 #include <QNetworkCookie>
 #include <QNetworkCookieJar>
+#include <QUrlQuery>
 #include <QtGui/QDesktopServices>
+#include <QTimer>
 
 #include <QDebug>
 
@@ -28,7 +30,7 @@ void OGame::loadSettings(QSettings& settings)
 
     settings.endGroup();
 
-    qDebug() << "\t"+name()+"::loadSettings" << m_pluginSettings.urlPatterns;
+    qDebug() << "\t" << name()+"::loadSettings" << m_pluginSettings.urlPatterns;
 }
 
 void OGame::saveSettings(QSettings& settings)
@@ -41,7 +43,7 @@ void OGame::saveSettings(QSettings& settings)
 
     settings.endGroup();
 
-    qDebug() << "\t"+name()+"::saveSettings";
+    qDebug() << "\t" << name()+"::saveSettings";
 }
 
 void OGame::saveState(QSettings& settings)
@@ -98,47 +100,89 @@ void OGame::injectHtml(QWebFrame* mainFrame, Account*)
 
 void OGame::replyFinished(QNetworkReply* reply)
 {
+    if(!s_networkManager) s_networkManager = reply->manager();
     QUrl url = reply->url();
     QString path = url.path();
     if(m_excludeExtensions.contains(path.mid(path.lastIndexOf(".") + 1),Qt::CaseInsensitive)) return;
 
-    QList<QNetworkCookie> cookies = reply->manager()->cookieJar()->cookiesForUrl(url);
-    QByteArray cValue;
+    QList<QNetworkCookie> cookies = s_networkManager->cookieJar()->cookiesForUrl(url);
     if(!cookies.count()) return;
-    cValue = cookies.at(0).value();
-    if(cValue.isEmpty()) return;
+    QByteArray cValue;
+    foreach(QNetworkCookie cookie, cookies) {
+        if(cookie.name().startsWith("login_")) {
+            cValue = cookie.value();
+        }
+    }
 
+    if(cValue.isEmpty()) return;
     // look for an account with that cookie
     Account *current = accFromCookie(QString(cValue));
-
     current->replyFinished(reply);
+
+    QStringList paths = url.path().split("/",QString::SkipEmptyParts);
+    if(paths.count() == 2 && paths.at(0) == QString("main")) {
+        if(paths.at(1) == QString("login")) {
+            QUrlQuery q(reply->property("postData").toString());
+            qDebug() << "\t Login:" << q.toString();
+        }
+    }
 
     QString logString;
     QDateTime now = QDateTime::currentDateTimeUtc();
     logString.append(now.toString("[yyyy-MM-dd HH:mm:ss]"));
     logString.append("  "+name()+"::replyFinished (" + url.path());
+    if(!url.query().isEmpty()) logString.append("?" + url.query());
     logString.append(")");
     QByteArray post = reply->property("postData").toByteArray();
     if(post.length() > 0) logString.append(", POST:'"+post+"'");
     qDebug() << logString;
 }
 
+QByteArray OGame::lastServerLogin(QUrl & url)
+{
+    QList<QNetworkCookie> cookies = s_networkManager->cookieJar()->cookiesForUrl(url);
+    foreach(QNetworkCookie cookie, cookies) {
+        if(cookie.name().startsWith("login_")) {
+            QByteArray value = QByteArray::fromPercentEncoding(cookie.value());
+            return(value.split(':').at(1));
+        }
+    }
+    return(QByteArray());
+}
+
 void OGame::loadFinished(QWebPage* page)
 {
+    if(!s_networkManager) s_networkManager = page->networkAccessManager();
     QUrl url = page->mainFrame()->url();
 
-    QList<QNetworkCookie> cookies = page->networkAccessManager()->cookieJar()->cookiesForUrl(url);
-    QByteArray cValue;
+    QList<QNetworkCookie> cookies = s_networkManager->cookieJar()->cookiesForUrl(url);
     if(!cookies.count()) return;
-    cValue = cookies.at(0).value();
+    QByteArray cValue;
+
+    foreach(QNetworkCookie cookie, cookies) {
+        if(cookie.name() == "OG_lastServer") {
+            url.setHost(cookie.value());
+            QByteArray value = lastServerLogin(url);
+            if(value.isEmpty()) return;
+            QWebElement input = page->mainFrame()->findFirstElement("#usernameLogin");
+            input.setAttribute("value",value);
+            page->mainFrame()->evaluateJavaScript("document.getElementById('passwordLogin').focus();");
+            // password setzen & submit klicken geht natürlich auch ;-)
+            return;
+        }
+        if(cookie.name().startsWith("login_")) {
+            cValue = cookie.value();
+        }
+    }
+
     if(cValue.isEmpty()) return;
 
     // look for an account with that cookie
     Account *current = accFromCookie(QString(cValue));
 
-    page->mainFrame()->addToJavaScriptWindowObject("account", current);
-
     injectHtml(page->mainFrame(), current);
+
+    page->mainFrame()->addToJavaScriptWindowObject("account", current);
 
     current->loadFinished(page);
 

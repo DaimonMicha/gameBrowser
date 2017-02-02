@@ -1,6 +1,6 @@
 TEMPLATE         = app
 
-QT              += webkitwidgets network widgets printsupport
+QT              += network widgets printsupport webkitwidgets
 
 DESTDIR          = ../
 TARGET           = gameBrowser

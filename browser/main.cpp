@@ -40,6 +40,48 @@
 ****************************************************************************/
 
 #include "browserapplication.h"
+#include <QCommandLineParser>
+#include <QMessageBox>
+
+
+enum CommandLineParseResult
+{
+    CommandLineOk,
+    CommandLineError,
+    CommandLineVersionRequested,
+    CommandLineHelpRequested
+};
+
+CommandLineParseResult parseCommandLine(QCommandLineParser &parser, BrowserApplication *app, QString *errorMessage)
+{
+    const QCommandLineOption profileOption(QStringList() << "p" << "profile",
+            app->translate("main", "use the specified profile &lt;profile&gt;."),
+            app->translate("main", "profile"));
+    parser.addOption(profileOption);
+    const QCommandLineOption helpOption = parser.addHelpOption();
+    const QCommandLineOption versionOption = parser.addVersionOption();
+
+    if (!parser.parse(app->arguments())) {
+        *errorMessage = parser.errorText();
+        return CommandLineError;
+    }
+
+    if (parser.isSet(versionOption))
+        return CommandLineVersionRequested;
+
+    if (parser.isSet(helpOption))
+        return CommandLineHelpRequested;
+
+    if (parser.isSet(profileOption)) {
+        const QString profile = parser.value(profileOption);
+        app->setProfile(profile);
+    }
+
+    return CommandLineOk;
+}
+
+
+
 
 int main(int argc, char **argv)
 {
@@ -47,6 +89,30 @@ int main(int argc, char **argv)
     BrowserApplication application(argc, argv);
     if (!application.isTheOnlyBrowser())
         return 0;
+    QCommandLineParser parser;
+    //parser.setApplicationDescription("DaimonNetworks gameBrowser");
+    QString errorMessage;
+
+    switch (parseCommandLine(parser, &application, &errorMessage)) {
+        case CommandLineOk:
+            break;
+        case CommandLineError:
+            QMessageBox::warning(0, application.applicationDisplayName(),
+                                 "<html><head/><body><h2>" + errorMessage + "</h2><pre>"
+                                 + parser.helpText() + "</pre></body></html>");
+            return 1;
+        case CommandLineVersionRequested:
+            QMessageBox::information(0, application.applicationDisplayName(),
+                                     application.applicationDisplayName() + ' '
+                                     + application.applicationVersion());
+            return 0;
+        case CommandLineHelpRequested:
+            QMessageBox::warning(0, application.applicationDisplayName(),
+                                 "<html><head/><body><pre>"
+                                 + parser.helpText() + "</pre></body></html>");
+            return 0;
+    }
+
     application.newMainWindow();
     return application.exec();
 }

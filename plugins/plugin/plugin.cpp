@@ -28,7 +28,7 @@ void Plugin::loadSettings(QSettings& settings)
 
     settings.endGroup();
 
-    qDebug() << "\t"+name()+"::loadSettings" << m_pluginSettings.urlPatterns;
+    qDebug() << "\t" << name()+"::loadSettings" << m_pluginSettings.urlPatterns;
 }
 
 void Plugin::saveSettings(QSettings& settings)
@@ -41,7 +41,7 @@ void Plugin::saveSettings(QSettings& settings)
 
     settings.endGroup();
 
-    qDebug() << "\t"+name()+"::saveSettings";
+    qDebug() << "\t" << name()+"::saveSettings";
 }
 
 void Plugin::saveState(QSettings& settings)

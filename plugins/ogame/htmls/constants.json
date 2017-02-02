@@ -1,0 +1,176 @@
+{
+    "techs": [
+        { "id":   1, "name": "Metallmine", "prerequisites": [] },
+        { "id":   2, "name": "Kristallmine", "prerequisites": [] },
+        { "id":   3, "name": "Deuterium-Synthetisierer", "prerequisites": [] },
+        { "id":   4, "name": "Solarkraftwerk", "prerequisites": [] },
+        { "id":  12, "name": "Fusionskraftwerk", "prerequisites": [] },
+        { "id":  14, "name": "Roboterfabrik", "prerequisites": [] },
+        { "id":  15, "name": "Nanitenfabrik", "prerequisites": [] },
+        { "id":  21, "name": "Raumschiffswerft", "prerequisites": [] },
+        { "id":  22, "name": "Metallspeicher", "prerequisites": [] },
+        { "id":  23, "name": "Kristallspeicher", "prerequisites": [] },
+        { "id":  24, "name": "Deuteriumtank", "prerequisites": [] },
+        { "id":  25, "name": "Abgeschirmtes Metallversteck", "prerequisites": [] },
+        { "id":  26, "name": "Unterirdisches Kristallversteck", "prerequisites": [] },
+        { "id":  27, "name": "Meeresgrund-Deuteriumversteck", "prerequisites": [] },
+        { "id":  31, "name": "Forschungslabor", "prerequisites": [] },
+        { "id":  33, "name": "Terraformer", "prerequisites": [] },
+        { "id":  34, "name": "Allianzdepot", "prerequisites": [] },
+        { "id":  36, "name": "Raumdock", "prerequisites": [] },
+        { "id":  41, "name": "Mondbasis", "prerequisites": [] },
+        { "id":  42, "name": "Sensorphalanx", "prerequisites": [] },
+        { "id":  43, "name": "Sprungtor", "prerequisites": [] },
+        { "id":  44, "name": "Raketensilo", "prerequisites": [] },
+        { "id": 106, "name": "Spionagetechnik", "prerequisites": [] },
+        { "id": 108, "name": "Computertechnik", "prerequisites": [] },
+        { "id": 109, "name": "Waffentechnik", "prerequisites": [] },
+        { "id": 110, "name": "Schildtechnik", "prerequisites": [] },
+        { "id": 111, "name": "Raumschiffpanzerung", "prerequisites": [] },
+        { "id": 113, "name": "Energietechnik", "prerequisites": [] },
+        { "id": 114, "name": "Hyperraumtechnik", "prerequisites": [] },
+        { "id": 115, "name": "Verbrennungstriebwerk", "prerequisites": [] },
+        { "id": 117, "name": "Impulstriebwerk", "prerequisites": [] },
+        { "id": 118, "name": "Hyperraumantrieb", "prerequisites": [] },
+        { "id": 120, "name": "Lasertechnik", "prerequisites": [] },
+        { "id": 121, "name": "Ionentechnik", "prerequisites": [] },
+        { "id": 122, "name": "Plasmatechnik", "prerequisites": [] },
+        { "id": 123, "name": "Intergalaktisches Forschungsnetzwerk", "prerequisites": [] },
+        { "id": 124, "name": "Astrophysik", "prerequisites": [] },
+        { "id": 199, "name": "Gravitonforschung", "prerequisites": [] },
+        { "id": 202, "name": "Kleiner Transporter", "prerequisites": [], "data": {
+                "structur": 4000,
+                "shield": 10,
+                "weapon": 5,
+                "speed": 10000,
+                "capacity": 5000,
+                "consum": 20
+            } },
+        { "id": 203, "name": "Großer Transporter", "prerequisites": [], "data": {
+                "structur": 12000,
+                "shield": 25,
+                "weapon": 5,
+                "speed": 7500,
+                "capacity": 25000,
+                "consum": 50
+            } },
+        { "id": 204, "name": "Leichter Jäger", "prerequisites": [], "data": {
+                "structur": 4000,
+                "shield": 10,
+                "weapon": 50,
+                "speed": 12500,
+                "capacity": 50,
+                "consum": 20
+            } },
+        { "id": 205, "name": "Schwerer Jäger", "prerequisites": [], "data": {
+                "structur": 10000,
+                "shield": 25,
+                "weapon": 150,
+                "speed": 10000,
+                "capacity": 100,
+                "consum": 75
+            } },
+        { "id": 206, "name": "Kreuzer", "prerequisites": [], "data": {
+                "structur": 27000,
+                "shield": 50,
+                "weapon": 400,
+                "speed": 15000,
+                "capacity": 800,
+                "consum": 300
+            } },
+        { "id": 207, "name": "Schlachtschiff", "prerequisites": [], "data": {
+                "structur": 60000,
+                "shield": 200,
+                "weapon": 1000,
+                "speed": 10000,
+                "capacity": 1500,
+                "consum": 500
+            } },
+        { "id": 208, "name": "Kolonieschiff", "prerequisites": [], "data": {
+                "structur": 30000,
+                "shield": 100,
+                "weapon": 50,
+                "speed": 2500,
+                "capacity": 7500,
+                "consum": 1000
+            } },
+        { "id": 209, "name": "Recycler", "prerequisites": [], "data": {
+                "structur": 16000,
+                "shield": 10,
+                "weapon": 1,
+                "speed": 2000,
+                "capacity": 20000,
+                "consum": 300
+            } },
+        { "id": 210, "name": "Spionagesonde", "prerequisites": [], "data": {
+                "structur": 1000,
+                "shield": 0.01,
+                "weapon": 0.01,
+                "speed": 100000000,
+                "capacity": 0,
+                "consum": 1
+            } },
+        { "id": 211, "name": "Bomber", "prerequisites": [], "data": {
+                "structur": 75000,
+                "shield": 500,
+                "weapon": 1000,
+                "speed": 4000,
+                "capacity": 500,
+                "consum": 1000
+            } },
+        { "id": 212, "name": "Solarsatellit", "prerequisites": [], "data": {
+                "structur": 2000,
+                "shield": 1,
+                "weapon": 1,
+                "speed": 0,
+                "capacity": 0,
+                "consum": 0
+            } },
+        { "id": 213, "name": "Zerstörer", "prerequisites": [], "data": {
+                "structur": 110000,
+                "shield": 500,
+                "weapon": 2000,
+                "speed": 5000,
+                "capacity": 2000,
+                "consum": 1000
+            } },
+        { "id": 214, "name": "Todesstern", "prerequisites": [], "data": {
+                "structur": 9000000,
+                "shield": 50000,
+                "weapon": 200000,
+                "speed": 100,
+                "capacity": 1000000,
+                "consum": 1
+            } },
+        { "id": 215, "name": "Schlachtkreuzer", "prerequisites": [], "data": {
+                "structur": 70000,
+                "shield": 400,
+                "weapon": 700,
+                "speed": 10000,
+                "capacity": 7500,
+                "consum": 250
+            } },
+        { "id": 401, "name": "Raketenwerfer", "prerequisites": [] },
+        { "id": 402, "name": "Leichtes Lasergeschütz", "prerequisites": [] },
+        { "id": 403, "name": "Schweres Lasergeschütz", "prerequisites": [] },
+        { "id": 404, "name": "Gaußkanone", "prerequisites": [] },
+        { "id": 405, "name": "Ionengeschütz", "prerequisites": [] },
+        { "id": 406, "name": "Plasmawerfer", "prerequisites": [] },
+        { "id": 407, "name": "Kleine Schildkuppel", "prerequisites": [] },
+        { "id": 408, "name": "Große Schildkuppel", "prerequisites": [] },
+        { "id": 502, "name": "Abfangrakete", "prerequisites": [] },
+        { "id": 503, "name": "Interplanetarrakete", "prerequisites": [] }
+    ],
+    "missions": [
+        { "id":   1, "name": "Angreifen" },
+        { "id":   2, "name": "Verbandsangriff" },
+        { "id":   3, "name": "Transport" },
+        { "id":   4, "name": "Stationieren" },
+        { "id":   5, "name": "Halten" },
+        { "id":   6, "name": "Spionage" },
+        { "id":   7, "name": "Kolonisieren" },
+        { "id":   8, "name": "Trümmerfeld abbauen" },
+        { "id":   9, "name": "Zerstören" },
+        { "id":  15, "name": "Expedition" }
+    ]
+}

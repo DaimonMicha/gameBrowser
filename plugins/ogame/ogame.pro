@@ -31,3 +31,6 @@ OTHER_FILES     += \
 RESOURCES       += \
                 htmls/data.qrc
 
+DISTFILES += \
+    htmls/constants.json
+

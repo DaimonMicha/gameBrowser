@@ -34,6 +34,7 @@ public:
         return(false);
     }
     virtual QWidget* settingsWidget() const { return(new QWidget()); }
+    virtual QWidget* dockWidget() const { return(new QWidget()); }
 
     virtual void initPlugin() {
         Q_INIT_RESOURCE(data);
@@ -51,6 +52,7 @@ public:
                 << "woff"
                 << "swf"
                    ;
+        s_networkManager = 0;
     }
     virtual void loadSettings(QSettings &) {}
     virtual void saveSettings(QSettings &) {}
@@ -77,6 +79,7 @@ public:
 protected:
     PluginSettings              m_pluginSettings;
     QStringList                 m_excludeExtensions;
+    QNetworkAccessManager*      s_networkManager;
 };
 
 #define PluginInterface_iid "de.daimonnetworks.gameBrowser.PluginInterface"

@@ -8,6 +8,7 @@
 class OGame : public QObject, public PluginInterface
 {
     Q_OBJECT
+
     Q_PLUGIN_METADATA(IID "de.daimonnetwork.gameBrowser.PluginInterface" FILE "ogame.json")
     Q_INTERFACES(PluginInterface)
 
@@ -27,6 +28,7 @@ public:
 private:
     Account *accFromCookie(const QString);
     void injectHtml(QWebFrame*, Account*);
+    QByteArray lastServerLogin(QUrl&);
 
 private:
     QList<Account *>            m_accounts;

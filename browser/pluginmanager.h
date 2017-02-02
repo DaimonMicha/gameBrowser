@@ -9,6 +9,7 @@
 class jsConsole : public QObject
 {
     Q_OBJECT
+
 public:
     jsConsole(QObject *parent = 0);
 
@@ -23,6 +24,7 @@ public slots:
 class PluginManager : public QObject
 {
     Q_OBJECT
+
 public:
     explicit PluginManager(QObject *parent = 0);
 

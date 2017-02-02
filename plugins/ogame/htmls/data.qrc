@@ -4,5 +4,6 @@
         <file>inject.html</file>
         <file>gamescript.js</file>
         <file>checkscript.js</file>
+        <file>constants.json</file>
     </qresource>
 </RCC>

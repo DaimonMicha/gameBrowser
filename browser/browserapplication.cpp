@@ -69,7 +69,7 @@
 
 #include <QWebSettings>
 
-#include <QtCore/QDebug>
+#include <QDebug>
 
 DownloadManager *BrowserApplication::s_downloadManager = 0;
 HistoryManager *BrowserApplication::s_historyManager = 0;
@@ -80,6 +80,7 @@ PluginManager *BrowserApplication::s_pluginManager = 0;
 BrowserApplication::BrowserApplication(int &argc, char **argv)
     : QApplication(argc, argv)
     , m_localServer(0)
+    , m_profileName("Default")
 {
     QCoreApplication::setOrganizationName(QLatin1String("DaimonNetworks"));
     QCoreApplication::setApplicationName(QLatin1String("gameBrowser"));
@@ -93,6 +94,9 @@ BrowserApplication::BrowserApplication(int &argc, char **argv)
     QString serverName = QCoreApplication::applicationName();
 #endif
     QLocalSocket socket;
+
+    qDebug() << "BrowserApplication" << serverName;
+
     socket.connectToServer(serverName);
     if (socket.waitForConnected(500)) {
         QTextStream stream(&socket);
@@ -125,14 +129,14 @@ BrowserApplication::BrowserApplication(int &argc, char **argv)
 
 #ifndef QT_NO_OPENSSL
     if (!QSslSocket::supportsSsl()) {
-    QMessageBox::information(0, "Daimon Browser",
+    QMessageBox::information(0, "DaimonNetwork gameBrowser",
                  "This system does not support OpenSSL. SSL websites will not be available.");
     }
 #endif
 
     QDesktopServices::setUrlHandler(QLatin1String("http"), this, "openUrl");
-    QString localSysName = QLocale::system().name();
 
+    QString localSysName = QLocale::system().name();
     installTranslator(QLatin1String("qt_") + localSysName);
 
     QSettings settings;
@@ -145,7 +149,7 @@ BrowserApplication::BrowserApplication(int &argc, char **argv)
             this, SLOT(lastWindowClosed()));
 #endif
 
-    QTimer::singleShot(0, this, SLOT(postLaunch()));
+    QTimer::singleShot(10, this, SLOT(postLaunch()));
 }
 
 BrowserApplication::~BrowserApplication()
@@ -204,13 +208,15 @@ void BrowserApplication::quitBrowser()
  */
 void BrowserApplication::postLaunch()
 {
-    QString directory = QStandardPaths::writableLocation(QStandardPaths::DataLocation);
+    QString directory = QStandardPaths::writableLocation(QStandardPaths::DataLocation) + "/" + m_profileName;
     if (directory.isEmpty())
         directory = QDir::homePath() + QLatin1String("/.") + QCoreApplication::applicationName();
     QWebSettings::setIconDatabasePath(directory);
     QWebSettings::setOfflineStoragePath(directory);
 
     setWindowIcon(QIcon(QLatin1String(":browser.svg")));
+
+    qDebug() << "BrowserApplication::postLaunch" << directory;
 
     BrowserApplication::pluginManager()->loadPlugins();
 
@@ -310,6 +316,11 @@ void BrowserApplication::saveSession()
 bool BrowserApplication::canRestoreSession() const
 {
     return !m_lastSession.isEmpty();
+}
+
+void BrowserApplication::setProfile(const QString profile)
+{
+    m_profileName = profile;
 }
 
 void BrowserApplication::restoreLastSession()

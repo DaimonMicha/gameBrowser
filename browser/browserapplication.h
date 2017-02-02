@@ -79,6 +79,7 @@ public:
 
     void saveSession();
     bool canRestoreSession() const;
+    void setProfile(const QString profile);
 
     static HistoryManager *historyManager();
     static CookieJar *cookieJar();
@@ -118,6 +119,7 @@ private:
     QLocalServer *m_localServer;
     QByteArray m_lastSession;
     mutable QIcon m_defaultIcon;
+    QString m_profileName;
 };
 
 #endif // BROWSERAPPLICATION_H
