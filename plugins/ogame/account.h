@@ -53,12 +53,15 @@ https://s137-de.ogame.gameforge.com
 
 */
 
+class QStandardItemModel;
+class OGameDock;
+
 class Account : public QObject
 {
     Q_OBJECT
 
 public:
-    Account(const QString cookie, QObject *parent = 0);
+    Account(const QString cookie, OGameDock* dock, QObject *parent = 0);
 
     Q_INVOKABLE QString cookieValue() const { return(m_cookieValue); }
     Q_INVOKABLE bool isActive(const QString option = "enableAccount") const {
@@ -71,8 +74,11 @@ public:
     QJsonObject parseFleet(QWebElement&);
     int fleetCargo(QJsonObject&);
     int fleetCapacity(QJsonObject&);
+    QString fingerprint() const;
+    OGameDock* dock() const { return(s_browserDock); }
 
 signals:
+    void playerFound();
 
 public slots:
     void toggle(const QString option = "account", const bool on = false);
@@ -83,13 +89,15 @@ private:
     QMap<QString, bool>     m_botOptions;
     QString                 m_cookieValue;
     QNetworkAccessManager*  s_networkManager;
-    QMap<int, PlanetInfo*>  m_myPlanets;
+    OGameDock*              s_browserDock;
 
     QString                 m_currentPlayer;
     QString                 m_currentPlanet;
+    QJsonObject             m_world;
     QJsonObject             m_planets;
     QJsonObject             m_fleets;
     QJsonObject             m_constants;
+    QStandardItemModel*     s_planets;
 };
 
 #endif // ACCOUNT_H

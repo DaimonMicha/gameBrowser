@@ -1,6 +1,6 @@
 #-------------------------------------------------
 #
-# Project created by QtCreator 2016-05-24T03:45:25
+# Project: OGame - Plugin
 #
 #-------------------------------------------------
 
@@ -14,23 +14,31 @@ include(../../global.pri)
 DESTDIR          = ../
 TARGET           = ogame
 
-SOURCES         += \
-                ogame.cpp \
-                account.cpp
-
 HEADERS         += \
                 ogame.h \
-                account.h
+                account.h \
+                ogamedock.h \
+    fleetdialog.h
+
+SOURCES         += \
+                ogame.cpp \
+                account.cpp \
+                ogamedock.cpp \
+    fleetdialog.cpp
+
+FORMS           += \
+                ogamedock.ui \
+    fleetdialog.ui
+
+RESOURCES       += \
+                htmls/data.qrc
 
 OTHER_FILES     += \
+                htmls/constants.json \
                 htmls/inject.css \
                 htmls/inject.html \
                 htmls/gamescript.js \
                 htmls/checkscript.js
 
-RESOURCES       += \
-                htmls/data.qrc
-
-DISTFILES += \
-    htmls/constants.json
-
+DISTFILES       += \
+                htmls/constants.json

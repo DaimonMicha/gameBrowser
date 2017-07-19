@@ -2,10 +2,16 @@
 #define BATTLEKNIGHT_H
 
 #include "plugininterface.h"
-#include "account.h"
+#include "accmodule.h"
+
 
 #include <QJsonDocument>
 
+
+
+class BattleKnightDock;
+class bkWorld;
+class bkAccount;
 
 
 class BattleKnight : public QObject, public PluginInterface
@@ -15,10 +21,11 @@ class BattleKnight : public QObject, public PluginInterface
     Q_INTERFACES(PluginInterface)
 
 public:
+    BattleKnight();
     ~BattleKnight();
 
     QString name() const { return(QLatin1String("BattleKnight")); }
-    QWidget* settingsWidget() const { return(new QWidget()); }
+    //QWidget* settingsWidget() const { return(new QWidget()); }
 
     void loadSettings(QSettings &);
     void saveSettings(QSettings &);
@@ -28,17 +35,24 @@ public:
     void loadFinished(QWebPage*);
 
 private:
-    Account *accFromCookie(const QString,const QUrl url = QUrl());
-    void injectHtml(QWebFrame*, Account*);
+    QString getCookie(const QUrl&);
+    bkAccount *findAccount(const QUrl&);
+    void injectHtml(QWebFrame*);
 
 private slots:
-    void hasPlayer();
+    void updateMP();
 
 private:
-    QList<Account *>            m_accounts;
+    QList<bkWorld *>            m_worldList;
+    QList<bkAccount *>          m_accountList;
+
+    QList<QPointer<accModule> > m_modules;
+
     QList<QPointer<QWebPage> >  m_webPages;
 
+    QJsonObject                 m_moduleDefaults;
     QJsonObject                 m_accountStates;
+    BattleKnightDock*           m_browserDock;
 };
 
 #endif // BATTLEKNIGHT_H

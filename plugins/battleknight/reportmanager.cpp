@@ -28,7 +28,8 @@ void ReportManager::checkReport(const QVariant data)
     QJsonDocument json = QJsonDocument::fromVariant(data);
     if(!json.isObject()) return;
 
-    if(m_mailsMap.contains(json.object().value("mail_id").toString())) {
+    qDebug() << "ReportManager::checkReport" << json.object().value("mail_id").toString();
+    if(!m_mailsMap.isEmpty() && m_mailsMap.contains(json.object().value("mail_id").toString())) {
         //if(json.object().value("mail_id").toString() == "60030088") qDebug() << m_mailsMap.value(json.object().value("mail_id").toString()).toMap();
         return;
     }
@@ -224,6 +225,13 @@ void ReportManager::phpReady()
 
 void ReportManager::unserialize(const QString& data)
 {
+    // look here:
+    // http://www.phpinternalsbook.com/classes_objects/serialization.html
+    // https://github.com/kayahr/pherialize/blob/master/src/main/java/de/ailis/pherialize/Unserializer.java
+    // http://www.mycsharp.de/wbb2/thread.php?postid=276855
+    // for a little parser.
+    //
+    // my old way:
     phpProc->start("/usr/bin/php", QStringList() << "-r" << "echo json_encode(unserialize('"+data+"'));");
     if(!phpProc->waitForStarted()) {
         // error-handling!

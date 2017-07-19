@@ -17,7 +17,7 @@ class botConfig
 public:
     bool bot;
 };
-
+/*
 class accPlayer
 {
 public:
@@ -36,7 +36,7 @@ public:
 
     bool    premium;
 };
-
+*/
 /*
  * Orte in BattleKnight (locations.json)
  * id   location            name
@@ -89,7 +89,7 @@ class Account : public QObject
 public:
     Account(const QString cookie, const QUrl url, QObject *parent = 0);
 
-    Q_INVOKABLE bool isActive(const QString option = "enableAccount") const {
+    Q_INVOKABLE bool isActive(QString option = "enableAccount") const {
         if(m_accStatus.contains(option)) return(m_accStatus.value(option).toBool());
         return(false);
     }

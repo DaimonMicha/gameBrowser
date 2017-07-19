@@ -1,3 +1,4 @@
+
 {
     "v1": {
         "name": "VillageOne",
@@ -46,7 +47,12 @@
             "BurningVillage",
             "AdversaryBridgehead",
             "Coast"
-        ]
+        ],
+        "work": {
+            "evil": 1.1,
+            "good": 1.1,
+            "neutral": 1.21
+        }
     },
     "cf2": {
         "name": "CoastalFortressTwo",
@@ -67,7 +73,12 @@
             "Tabour",
             "Bridge",
             "Coast"
-        ]
+        ],
+        "work": {
+            "evil": 0.8,
+            "good": 0.8,
+            "neutral": 0.88
+        }
     },
     "v2": {
         "name": "VillageTwo",
@@ -173,6 +184,7 @@
     "gt": {
         "name": "GhostTown",
         "title": "Talfour",
+        "tax": 40,
         "missions": [
             "WitchForest",
             "DeadLand",
@@ -180,21 +192,15 @@
             "CastleRuin",
             "DragonLair"
         ]
+    },
+    "fi": {
+        "name": "FogIsland",
+        "title": "Fehan",
+        "tax": 35,
+        "missions": [
+            "Laguna",
+            "Tidesbeach",
+            "Fogforest"
+        ]
     }
 }
-/*
-    <div id="h1tp3" class="path"></div>
-    <div id="tp2h1" class="path"></div>
-    <div id="hstp2" class="path"></div>
-    <div id="tp1hs" class="path"></div>
-    <div id="v1tp1" class="path"></div>
-    <div id="tp1gt" class="path"></div>
-    <div id="h3tp1" class="path"></div>
-    <div id="hscf1" class="path"></div>
-    <div id="gtc1" class="path"></div>
-    <div id="c1cf2" class="path"></div>
-    <div id="tp2v2" class="path"></div>
-    <div id="v3tp3" class="path"></div>
-    <div id="tp3f1" class="path"></div>
-    <div id="c1tp3_longboat" class="path"></div>
-*/

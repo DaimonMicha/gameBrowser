@@ -1,0 +1,94 @@
+
+{
+    "Account": {
+        "enable": true,
+        "title": "KlickMeister",
+        "tooltip": "mach mich an!",
+        "state": 0,
+        "strength": 32,
+        "logic": {
+            "timer": 0,
+            "duration": 0,
+            "state": 0
+        },
+        "cooldown": {
+            "timer": 0,
+            "duration": 0,
+            "state": 0
+        },
+        "karma": {
+            "timer": 0,
+            "duration": 86400,
+            "state": 0
+        },
+        "manor": {
+        }
+    },
+    "Missions": {
+        "enable": false,
+        "title": "Missionen",
+        "strength": 32,
+        "state": 0,
+        "progress": {
+            "count": 0,
+            "timer": 0,
+            "duration": 3600
+        }
+    },
+    "GM": {
+        "enable": false,
+        "title": "Gruppenmission",
+        "strength": 32,
+        "state": 0,
+        "progress": {
+            "count": 0,
+            "timer": 0,
+            "duration": 3600
+        }
+    },
+    "Duels": {
+        "enable": true,
+        "title": "Duelle",
+        "strength": 32,
+        "state": 0
+    },
+    "Work": {
+        "enable": true,
+        "title": "Arbeit",
+        "strength": 32,
+        "state": 0
+    },
+    "OS": {
+        "enable": false,
+        "title": "Ordensschlacht",
+        "strength": 32,
+        "state": 0,
+        "progress": {
+            "count": 0,
+            "timer": 0,
+            "duration": 3600
+        }
+    },
+    "Tournament": {
+        "enable": false,
+        "title": "Turnier",
+        "strength": 32,
+        "state": 0,
+        "progress": {
+            "count": 0,
+            "timer": 0,
+            "duration": 3600
+        }
+    },
+    "Treasury": {
+        "enable": false,
+        "title": "Schatzkammer",
+        "strength": 32,
+        "state": 0,
+        "progress": {
+            "count": 0,
+            "timer": 0,
+            "duration": 3600
+        }
+    }
+}

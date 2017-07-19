@@ -1,0 +1,63 @@
+
+{
+    "1": {
+        "name": "Dunkle Kraft",
+        "title": "Die dunkle Kraft verleiht dir die Fähigkeit, 5 Stärkepunkte von deinem Gegner für die Dauer des Kampfes auf dich zu übertragen.",
+        "cost": 50
+    },
+    "2": {
+        "name": "Heilige Stärke",
+        "title": "Dein unerschütterlicher Glaube weckt übermenschliche Stärke in dir. Du erhältst für die Wirkungsdauer 10 zusätzliche Stärkepunkte.",
+        "cost": 50
+    },
+    "3": {
+        "name": "Schrei der Todesfee",
+        "title": "Die dunkle Kraft aus dem Reich der Toten umgibt deine Waffe mit einer mystischen Macht. Du erhältst 15% des verursachten Gesamtschadens als Lebensenergie gutgeschrieben.",
+        "cost": 150
+    },
+    "4": {
+        "name": "Verdammnis",
+        "title": "Du überträgst Krankheit und Pestilenz auf deine Gegner, um ihre Widerstandsfähigkeit zu brechen. Alle Resistenzen des Gegners werden um 10% reduziert.",
+        "cost": 50
+    },
+    "5": {
+        "name": "Säureschlag",
+        "title": "Der Säureschlag umgibt deine Waffenhand mit einer pulsierenden, magischen Säureschicht. Er verursacht einen Schaden von 200% des Grundschadens der getragenen Waffe und trifft immer. Der Angriff wird einmalig zu Beginn eines Kampfes durchgeführt.",
+        "cost": 150
+    },
+    "6": {
+        "name": "Dornenpanzer",
+        "title": "Der Dornenpanzer umhüllt deine Rüstung mit vergifteten Stacheln und Dornen und verursacht so bei deinem Angreifer Schaden von 15% seines eigenen Gesamtschadens.",
+        "cost": 200
+    },
+    "7": {
+        "name": "Schatten der Finsternis",
+        "title": "Du beschwörst dunklen Nebel aus dem Unterreich herbei und umgibst dich mit ihm. Der Nebel macht es für einen Angreifer besonders schwer, dich zu treffen. Du erhältst bei jedem Schlag, der dich treffen würde, eine 10% Chance, dem Schlag zu entgehen.",
+        "cost": 75
+    },
+    "8": {
+        "name": "Mystischer Schild",
+        "title": "Der mystische Schild umgibt deine Rüstung mit einer zusätzlichen Panzerung, die Schäden abwehrt. Der Schutzpanzer absorbiert in jedem Kampf physische Schadenspunkte in Höhe deiner Konstitutionspunkte.",
+        "cost": 200
+    },
+    "9": {
+        "name": "Engelsflügel",
+        "title": "Durch deinen standhaften Glauben an die Götter wirst du mit den Flügeln eines Engels belohnt, welche dir zusätzlich 30 Missionspunkte ermöglichen.",
+        "cost": 150
+    },
+    "10": {
+        "name": "Schutz der Ahnen",
+        "title": "Die Helden vergangener Zeiten durchfluten dich mit einem Teil ihrer Macht und erhöhen deine Resistenzen um 10%.",
+        "cost": 50
+    },
+    "11": {
+        "name": "Regeneration",
+        "title": "Heilende Kräfte durchfluten dich und ermöglichen dir so eine schnellere Regeneration deines Körpers um 50%.",
+        "cost": 75
+    },
+    "12": {
+        "name": "Trutzburg",
+        "title": "Du wirst durch die mystischen Kräfte einer Gottheit beschützt und kannst von keinem anderen Ritter angegriffen werden.",
+        "cost": 225
+    }
+}

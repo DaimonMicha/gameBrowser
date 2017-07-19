@@ -5,5 +5,8 @@
         <file>gamescript.js</file>
         <file>checkscript.js</file>
         <file>locations.json</file>
+        <file>karma.json</file>
+        <file>updater.js</file>
+        <file>modules.json</file>
     </qresource>
 </RCC>

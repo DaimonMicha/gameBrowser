@@ -26,6 +26,39 @@ function randInt(low, high) {
     return(Math.floor(Math.random() * (high - low + 1)) + low);
 }
 
+/*
+window.addEvent('domready', function() {
+    if (typeof (progressbarEndTime) == 'undefined') {
+        return;
+    }
+    var progressbarTimer = (function() {
+        var values = countdown(progressbarEndTime);
+        updateProgressbarCountdown(values.hours, values.minutes, values.seconds);
+        progressbarEndTime -= 1;
+        if (progressbarEndTime <= 0) {
+            if (typeof (l_callUrl) != 'undefined') {
+                redirect(g_url + '/' + l_callUrl + '?' + new Date().getTime(), null);
+            }
+            clearInterval(progressbarTimer);
+        }
+    }).periodical(1000);
+});
+function updateProgressbarCountdown(hours, minutes, seconds) {
+    var text = hours + ':' + minutes + ':' + seconds;
+    document.id('progressbarEnds').getElement('span').set('text', text);
+    switch (upOrDown) {
+        case 'Down':
+            var progressbarWidth = ((100 / progressbarDuration) * progressbarEndTime).toInt() + 44;
+            break;
+        case 'Up':
+        default:
+            var progressbarWidth = (100 - ((100 / progressbarDuration) * progressbarEndTime).toInt()) + 44;
+            break;
+    }
+    $('timeMeter').setStyle('width', progressbarWidth + '%');
+}
+*/
+
 var kmTextoutModule = function() {
     this.options = {
         template: 'kmZonesResult',

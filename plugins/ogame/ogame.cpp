@@ -1,4 +1,5 @@
 #include "ogame.h"
+#include "ogamedock.h"
 
 #include <QFile>
 #include <QTime>
@@ -8,7 +9,6 @@
 #include <QNetworkCookieJar>
 #include <QUrlQuery>
 #include <QtGui/QDesktopServices>
-#include <QTimer>
 
 #include <QDebug>
 
@@ -55,6 +55,20 @@ void OGame::saveState(QSettings& settings)
 //    qDebug() << "\t"+name()+"::saveState";
 }
 
+void OGame::hasPlayer()
+{
+    Account* account = qobject_cast<Account *>(sender());
+    if(!account) return;
+
+    // restoreState versuchen
+    //if(m_accountStates.contains(account->fingerprint())) {
+        //account->restoreState(m_accountStates.value(account->fingerprint()).toObject());
+    //}
+
+    if(s_dockWidget) ((QToolBox*)s_dockWidget)->setItemText(((QToolBox*)s_dockWidget)->indexOf(account->dock()),account->fingerprint());
+    //qDebug() << "\t OGame::hasPlayer" << account->fingerprint();
+}
+
 Account *OGame::accFromCookie(const QString cValue)
 {
     Account *ret = NULL;
@@ -65,8 +79,12 @@ Account *OGame::accFromCookie(const QString cValue)
         }
     }
     if(ret == NULL) {
-        ret = new Account(cValue, this);
+        m_browserDock = new OGameDock();
+        ret = new Account(cValue, m_browserDock, this);
+        QByteArray value = QByteArray::fromPercentEncoding(cValue.toLocal8Bit());
+        if(s_dockWidget) ((QToolBox*)s_dockWidget)->addItem(m_browserDock,value.split(':').at(1));
         ret->toggle("enableAccount", m_pluginSettings.enabled);
+        connect(ret, SIGNAL(playerFound()), this, SLOT(hasPlayer()));
         m_accounts.append(ret);
     }
     return(ret);

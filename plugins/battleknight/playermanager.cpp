@@ -61,6 +61,18 @@ void PlayerManager::checkPlayer(const QVariant data)
     }
 }
 
+bkPlayer* PlayerManager::player(const int id)
+{
+    foreach(bkPlayer *p, m_playerList) {
+        if(p->id() == id) {
+            return p;
+        }
+    }
+    bkPlayer* player = new bkPlayer(id);
+    m_playerList.append(player);
+    return player;
+}
+
 QVariant PlayerManager::playerData(const int id) const
 {
     int row = playersRow(id);

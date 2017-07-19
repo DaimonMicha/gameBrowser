@@ -85,6 +85,11 @@ BrowserApplication::BrowserApplication(int &argc, char **argv)
     QCoreApplication::setOrganizationName(QLatin1String("DaimonNetworks"));
     QCoreApplication::setApplicationName(QLatin1String("gameBrowser"));
     QCoreApplication::setApplicationVersion(QLatin1String("0.1"));
+
+    QIcon icon;
+    icon.addFile(QLatin1String(":browser.svg"), QSize(), QIcon::Normal, QIcon::Off);
+    setWindowIcon(icon);
+
 #ifdef Q_WS_QWS
     // Use a different server name for QWS so we can run an X11
     // browser and a QWS browser in parallel on the same machine for
@@ -95,7 +100,7 @@ BrowserApplication::BrowserApplication(int &argc, char **argv)
 #endif
     QLocalSocket socket;
 
-    qDebug() << "BrowserApplication" << serverName;
+    qWarning() << "BrowserApplication::serverName" << serverName;
 
     socket.connectToServer(serverName);
     if (socket.waitForConnected(500)) {
@@ -208,17 +213,15 @@ void BrowserApplication::quitBrowser()
  */
 void BrowserApplication::postLaunch()
 {
+    BrowserApplication::pluginManager()->loadPlugins();
+
     QString directory = QStandardPaths::writableLocation(QStandardPaths::DataLocation) + "/" + m_profileName;
-    if (directory.isEmpty())
+    if(directory.isEmpty())
         directory = QDir::homePath() + QLatin1String("/.") + QCoreApplication::applicationName();
     QWebSettings::setIconDatabasePath(directory);
     QWebSettings::setOfflineStoragePath(directory);
 
-    setWindowIcon(QIcon(QLatin1String(":browser.svg")));
-
-    qDebug() << "BrowserApplication::postLaunch" << directory;
-
-    BrowserApplication::pluginManager()->loadPlugins();
+    //qWarning() << "BrowserApplication::postLaunch" << directory;
 
     loadSettings();
 
@@ -296,6 +299,8 @@ void BrowserApplication::saveSession()
 
     clean();
 
+    BrowserApplication::pluginManager()->saveState();
+
     QSettings settings;
     settings.beginGroup(QLatin1String("sessions"));
 
@@ -309,7 +314,6 @@ void BrowserApplication::saveSession()
         stream << m_mainWindows.at(i)->saveState();
     settings.setValue(QLatin1String("lastSession"), data);
     settings.endGroup();
-    BrowserApplication::pluginManager()->saveState();
     //qDebug() << "BrowserApplication::saveSession" << data.length();
 }
 
@@ -396,6 +400,8 @@ BrowserMainWindow *BrowserApplication::newMainWindow()
 {
     BrowserMainWindow *browser = new BrowserMainWindow();
     m_mainWindows.prepend(browser);
+    qWarning() << "new BrowserMainWindow";
+    //browser->addDockWidget();
     browser->show();
     return browser;
 }

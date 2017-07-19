@@ -11,14 +11,31 @@ class jsConsole : public QObject
     Q_OBJECT
 
 public:
-    jsConsole(QObject *parent = 0);
+    jsConsole(QObject *parent = 0) :
+        QObject(parent)
+    {
+    }
 
 public slots:
-    void log(const QVariant&);
-    void info(const QVariant&);
-    void warn(const QVariant&);
-    void debug(const QVariant&);
+    void log(const QVariant& data)
+    {
+        qWarning() << "-> jsConsole::log:" << data.toByteArray().constData();
+    }
+    void info(const QVariant& data)
+    {
+        qWarning() << "-> jsConsole::info:" << data.toByteArray().constData();
+    }
+    void warn(const QVariant& data)
+    {
+        qWarning() << "-> jsConsole::warn:" << data.toByteArray().constData();
+    }
+    void debug(const QVariant& data)
+    {
+        qWarning() << "-> jsConsole::debug:" << data.toByteArray().constData();
+    }
 };
+
+
 
 
 class PluginManager : public QObject

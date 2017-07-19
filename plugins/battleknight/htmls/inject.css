@@ -15,9 +15,13 @@
     font-size: 1.2em;
 }
 .kmTopic {
+    position: relative;
     background-color: rgba(0, 0, 0, 0.45);
+    width: 136px;
     border: 3px solid grey;
-    margin-bottom: 10px;
+    margin-bottom: 6px;
+    padding-left: 4px;
+    padding-right: 4px;
 }
 .kmTopic table {
     width: 100%;
@@ -25,22 +29,20 @@
 }
 .kmTopic th {
     padding-top: 5px;
-    padding-bottom: 10px;
+    padding-bottom: 6px;
 }
 .kmTopic tr > th:first-child  {
     width: 25px;
 }
 .kmTopic td {
     height: 25px;
-    padding-left: 4px;
-    padding-right: 4px;
 }
 .kmHeader, .kmHeader a {
-    font-size: 1.2em;
+    font-size: 1.1em;
     font-weight: bold;
     text-align: left;
     text-decoration: none;
-    padding-left: 10px;
+    padding-left: 5px;
     color: white;
 }
 .kmHeader a:hover, .kmHeader label:hover {

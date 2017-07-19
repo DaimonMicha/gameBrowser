@@ -1,43 +1,17 @@
 #include "pluginmanager.h"
 #include "browserapplication.h"
+#include "browsermainwindow.h"
 #include "networkaccessmanager.h"
 
 #include <QDir>
+#include <QBuffer>
 #include <QLibrary>
 #include <QSettings>
 #include <QPluginLoader>
 #include <QWebFrame>
+#include <QDockWidget>
 
 #include <QDebug>
-
-
-
-
-jsConsole::jsConsole(QObject *parent) :
-    QObject(parent)
-{
-}
-
-void jsConsole::log(const QVariant& data)
-{
-    qDebug() << "jsConsole::log:" << data.toByteArray();
-}
-
-void jsConsole::info(const QVariant& data)
-{
-    qDebug() << "jsConsole::info:" << data.toByteArray();
-}
-
-void jsConsole::warn(const QVariant& data)
-{
-    qDebug() << "jsConsole::warn:" << data.toByteArray();
-}
-
-void jsConsole::debug(const QVariant& data)
-{
-    qDebug() << "jsConsole::debug:" << data.toByteArray();
-}
-
 
 
 
@@ -56,7 +30,6 @@ PluginManager::PluginManager(QObject *parent) :
     settings.endGroup();
     listPlugins();
     connect(BrowserApplication::networkAccessManager(), SIGNAL(finished(QNetworkReply*)), this, SLOT(replyFinished(QNetworkReply*)));
-    //qDebug() << "PluginManager::PluginManager" << m_pluginFiles.count();
 }
 
 void PluginManager::loadSettings()
@@ -82,6 +55,7 @@ void PluginManager::saveSettings()
     while(i.hasNext()) {
         i.next();
         i.key()->saveSettings(settings);
+        //qDebug() << "PluginManager::saveSettings()" << i.key()->name();
     }
 
     settings.endGroup();
@@ -97,6 +71,30 @@ void PluginManager::saveState()
     while(i.hasNext()) {
         i.next();
         i.key()->saveState(settings);
+
+        // get dockWidgets...
+        BrowserMainWindow *browser = BrowserApplication::instance()->mainWindow();
+        QList<QDockWidget *> widgets = browser->findChildren<QDockWidget *>();
+        foreach(QDockWidget *dw, widgets) {
+            if(dw->windowTitle() == i.key()->name()) {
+                settings.beginGroup(i.key()->name());
+                QByteArray data;
+                //bool floating, show;
+                QBuffer buffer(&data);
+                QDataStream stream(&buffer);
+                buffer.open(QIODevice::ReadWrite);
+                stream << dw->pos()
+                       << dw->saveGeometry()
+                       << dw->isFloating()
+                       << !dw->isHidden();
+                settings.setValue(QLatin1String("dockWidget"), data);
+/*
+                qDebug() << "PluginManager::saveState()" << i.key()->name()
+                         << !dw->isHidden() << dw->isVisible() << dw->isFloating() << dw->pos();
+*/
+                settings.endGroup();
+            }
+        }
     }
 
     settings.endGroup();
@@ -104,7 +102,7 @@ void PluginManager::saveState()
 
 void PluginManager::pluginOptionsChanged()
 {
-    qDebug() << "PluginManager::pluginOptionsChanged";
+    qWarning() << "PluginManager::pluginOptionsChanged";
 }
 
 void PluginManager::listPlugins()
@@ -127,8 +125,35 @@ void PluginManager::loadPlugin(const QString & filePath)
         if(e) {
             m_pluginsMap.insert(e, filePath);
             QSettings settings;
+            settings.beginGroup(QLatin1String("PluginManager"));
             //e->loadSettings(settings);
-            e->initPlugin();
+            //e->initPlugin();
+            QWidget *dock = e->dockWidget();
+            if(dock != Q_NULLPTR) {
+                //qDebug() << "loadPlugin::settingsKey:" << e->name()+"\\dockWidget";
+                QDockWidget *dw = new QDockWidget(e->name());
+                dw->setObjectName(e->name());
+                dw->setWidget(dock);
+                BrowserMainWindow *browser = BrowserApplication::instance()->mainWindow();
+                browser->addDockWidget(Qt::LeftDockWidgetArea,dw);
+
+                settings.beginGroup(e->name());
+                QByteArray d = settings.value(QLatin1String("dockWidget")).toByteArray();
+                QBuffer buffer(&d);
+                QDataStream stream(&buffer);
+                buffer.open(QIODevice::ReadWrite);
+                QByteArray data;
+                QPoint pos;
+                bool floating, show;
+                stream >> pos;
+                stream >> data;     dw->restoreGeometry(data);
+                stream >> floating; dw->setFloating(floating);
+                stream >> show;     dw->setVisible(show);
+                //qDebug() << pos;
+                dw->move(pos.x(),pos.y());
+                settings.endGroup();
+            }
+            settings.endGroup();
             //ret = true;
             //QStandardItem* item = new QStandardItem(e->name());
             //item->setData(filePath,Qt::ToolTipRole);

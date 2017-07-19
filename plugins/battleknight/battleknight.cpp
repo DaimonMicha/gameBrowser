@@ -1,5 +1,9 @@
 #include "battleknight.h"
-#include "accountui.h"
+
+#include "battleknightdock.h"
+
+#include "bkworld.h"
+#include "bkaccount.h"
 
 #include <QRegExp>
 #include <QFile>
@@ -16,12 +20,52 @@
 
 
 
+BattleKnight::BattleKnight() :
+    PluginInterface()
+{
+    s_dockWidget = new QToolBox();
+    QString di;
+    if(readDataFile("modules.json", di) > 0) {
+        m_moduleDefaults = QJsonDocument::fromJson(di.toLocal8Bit()).object();
+        //qDebug() << QJsonDocument(m_moduleDefaults).toJson().data();
+        //accWorld->setLocationStrings(di);
+    }
+
+    foreach(QString key, m_moduleDefaults.keys()) {
+        QJsonObject mod = m_moduleDefaults.value(key).toObject();
+        //qDebug() << key;
+        if(key == "Account") {
+            m_modules.append(new modAccount(key, mod.value("title").toString(), mod.value("tooltip").toString()));
+        } else if(key == "Missions") {
+            m_modules.append(new modMissions(key, mod.value("title").toString(), mod.value("tooltip").toString()));
+        } else if(key == "GM") {
+            m_modules.append(new modGM(key, mod.value("title").toString(), mod.value("tooltip").toString()));
+        } else if(key == "Duels") {
+            m_modules.append(new modDuel(key, mod.value("title").toString(), mod.value("tooltip").toString()));
+        } else {
+            m_modules.append(new accModule(key, mod.value("title").toString(), mod.value("tooltip").toString()));
+        }
+    }
+/*
+    m_modules.append(new accModule("Work", "Arbeiten"));
+    m_modules.append(new accModule("Clanwar", "Ordensschlacht"));
+    m_modules.append(new accModule("Turnier", "Turnier"));
+    m_modules.append(new accModule("Treasury", "Schatzkammer"));
+*/
+}
+
 BattleKnight::~BattleKnight()
 {
-    if(m_accounts.count() > 0) foreach(Account *account, m_accounts) {
-        delete(account);
+    while(!m_modules.isEmpty()) {
+        m_modules.takeLast()->deleteLater();
     }
-    Q_CLEANUP_RESOURCE(data);
+    while(!m_accountList.isEmpty()) {
+        m_accountList.takeLast()->deleteLater();
+    }
+    while(!m_worldList.isEmpty()) {
+        m_worldList.takeLast()->deleteLater();
+    }
+    //qDebug() << "BattleKnight destroyed.";
 }
 
 void BattleKnight::loadSettings(QSettings &settings)
@@ -59,104 +103,147 @@ void BattleKnight::saveState(QSettings& settings)
     QByteArray debugMsg;
     settings.beginGroup(name());
 
-    if(m_accounts.count() > 0) foreach(Account *account, m_accounts) {
-        if(!account->fingerprint().isEmpty()) {
-            m_accountStates.insert(account->fingerprint(), account->state());
-            //debugMsg.append("saveState for \""+m_accountStates.insert(account->fingerprint(), account->state()).key()+"\".\n");
-        }
+    foreach(bkAccount *acc, m_accountList) {
+        QString key = QString("%1::%2").arg(acc->world()->name()).arg(acc->player()->id());
+        m_accountStates.insert(key, acc->saveState());
     }
-    QJsonDocument ret(m_accountStates);
 
-    settings.setValue(QLatin1String("accountStates"), ret.toJson(QJsonDocument::Compact).constData());
+    settings.setValue(QLatin1String("accountStates"), QJsonDocument(m_accountStates).toJson(QJsonDocument::Compact).constData());
     settings.endGroup();
 
-    //debugMsg.append(name()+"::saveStates: \n").append(ret.toJson(QJsonDocument::Compact)+"\n"); // QJsonDocument::Compact
+    //debugMsg.append(name()+"::saveStates: \n").append(QJsonDocument(m_accountStates).toJson(QJsonDocument::Compact)+"\n");
     if(!debugMsg.isEmpty()) qDebug() << debugMsg.constData();
 }
 
-void BattleKnight::hasPlayer()
+
+QString BattleKnight::getCookie(const QUrl& url)
 {
-    Account* account = qobject_cast<Account *>(sender());
-    if(!account) return;
-    // restoreState versuchen
-    if(m_accountStates.contains(account->fingerprint())) {
-        account->restoreState(m_accountStates.value(account->fingerprint()).toObject());
+    if(s_networkManager == Q_NULLPTR) return QString();
+    QList<QNetworkCookie> cookies = s_networkManager->cookieJar()->cookiesForUrl(url);
+    foreach(QNetworkCookie cookie, cookies) {
+        //qWarning() << cookie.name() << cookie.value();
+        if(cookie.name() == "BattleKnight") {
+            QString val = QUrl::fromPercentEncoding(cookie.value());
+            return val;
+        }
     }
-    //qDebug() << "BattleKnight::hasPlayer" << account->fingerprint();
+    return QString();
 }
 
-Account *BattleKnight::accFromCookie(const QString cValue, const QUrl url)
+bkAccount *BattleKnight::findAccount(const QUrl& url)
 {
-    Account *ret = NULL;
-    if(m_accounts.count() > 0) foreach(Account *account, m_accounts) {
-        if(account->cookieValue() == cValue) {
-            ret = account;
+    QString c = getCookie(url);
+    if(c.isEmpty()) return Q_NULLPTR;
+    int knight_id = 0;
+    if(c.contains('#')) knight_id = c.split('#').at(1).toInt();
+
+    if(knight_id == 0) return Q_NULLPTR;
+
+    QString w = url.host().split('.').at(0);
+
+    foreach(bkAccount *a, m_accountList) {
+        if((a->world()->name() == w) && (a->player()->id() == knight_id)) {
+            return a;
+        }
+    }
+
+    bkWorld *accWorld = Q_NULLPTR;
+    foreach(bkWorld *world, m_worldList) {
+        if(world->name() == w) {
+            accWorld = world;
             break;
         }
     }
-    if(ret == NULL) {
-        ret = new Account(cValue, url, this);
-        ret->toggle("enablePlugin", m_pluginSettings.enabled);
-        connect(ret, SIGNAL(playerFound()), this, SLOT(hasPlayer()));
-        m_accounts.append(ret);
+    if(accWorld == Q_NULLPTR) {
+        accWorld = new bkWorld(w,this);
+        QString di;
+        if(readDataFile("locations.json", di) > 0) {
+            accWorld->setLocationStrings(di);
+        }
+        if(readDataFile("karma.json", di) > 0) {
+            accWorld->setKarmaStrings(di);
+        }
+        m_worldList.append(accWorld);
     }
-    return(ret);
+    bkAccount *acc = new bkAccount(accWorld, knight_id, m_moduleDefaults, this);
+    QString key = QString("%1::%2").arg(acc->world()->name()).arg(acc->player()->id());
+    if(m_accountStates.contains(key)) {
+        acc->restoreState(m_accountStates.value(key).toObject());
+    }
+    m_accountList.append(acc);
+    return acc;
+}
+
+void BattleKnight::updateMP()
+{
+    for(int i = m_webPages.count() - 1;i >= 0; --i) {
+        if(m_webPages.at(i).isNull()) m_webPages.removeAt(i);
+        else {
+            bkAccount* account = findAccount(m_webPages.at(i)->mainFrame()->url());
+            if(account == Q_NULLPTR) {
+                qDebug() << "BattleKnight::updateMP() no account found!";
+                return;
+            }
+        }
+    }
 }
 
 void BattleKnight::loadFinished(QWebPage* page)
 {
     QUrl url = page->mainFrame()->url();
-
-    QList<QNetworkCookie> cookies = page->networkAccessManager()->cookieJar()->cookiesForUrl(url);
-    QByteArray cValue;
-    if(!cookies.count()) return;
-    cValue = cookies.at(0).value();
-    if(cValue.isEmpty()) return;
+    if(s_networkManager == Q_NULLPTR) s_networkManager = page->networkAccessManager();
 
     // look for an account with that cookie
-    Account *current = accFromCookie(QString(cValue), url);
-
-    injectHtml(page->mainFrame(), current);
-
-    page->mainFrame()->addToJavaScriptWindowObject("account", current);
+    bkAccount* account = findAccount(page->mainFrame()->url());
+    if(account == Q_NULLPTR) {
+        qDebug() << "BattleKnight::loadFinished() no account found!";
+        return;
+    }
 
     for(int i = m_webPages.count() - 1;i >= 0; --i) {
         if(m_webPages.at(i).isNull()) m_webPages.removeAt(i);
     }
     if(!m_webPages.contains(page)) {
-        new accountUI(current, page);
         m_webPages.append(page);
     }
 
-    accountUI* ui = page->findChild<accountUI *>(QString(),Qt::FindDirectChildrenOnly);
-    if(ui) ui->inject();
-    current->loadFinished(page);
+    page->mainFrame()->addToJavaScriptWindowObject("account", account);
+    page->mainFrame()->evaluateJavaScript("window.onerror = null;");
+    injectHtml(page->mainFrame());
+    account->loadFinished(page);
+    foreach(accModule *module, m_modules) {
+        module->pageLoaded(account, page);
+    }
 
     QString logString;
     QDateTime now = QDateTime::currentDateTimeUtc();
     logString.append(now.toString("[yyyy-MM-dd HH:mm:ss]"));
     logString.append("  "+name()+"::loadFinished (" + url.path());
     logString.append(") '" + page->mainFrame()->title() + "'");
-    logString.append(QString(", %1 Pages.").arg(m_webPages.count()));
-    qDebug() << logString;
+    logString.append(QString(", %1 Tab(s).").arg(m_webPages.count()));
+    qDebug() << logString.toLatin1().data();// << account;
 }
 
 void BattleKnight::replyFinished(QNetworkReply* reply)
 {
+    if(s_networkManager == Q_NULLPTR) s_networkManager = reply->manager();
     QUrl url = reply->url();
     QString path = url.path();
+
     if(m_excludeExtensions.contains(path.mid(path.lastIndexOf(".") + 1),Qt::CaseInsensitive)) return;
 
-    QList<QNetworkCookie> cookies = reply->manager()->cookieJar()->cookiesForUrl(url);
-    QByteArray cValue;
-    if(!cookies.count()) return;
-    cValue = cookies.at(0).value();
-    if(cValue.isEmpty()) return;
+    //QList<QNetworkCookie> cookies = reply->manager()->cookieJar()->cookiesForUrl(url);
+    //QString cValue = getCookie(url);
+    //if(cValue.isEmpty()) return;
 
     // look for an account with that cookie
-    Account *current = accFromCookie(QString(cValue), url);
+    bkAccount* account = findAccount(reply->url());
+    if(account == Q_NULLPTR) {
+        qDebug() << "BattleKnight::replyFinished() no account found!";
+        return;
+    }
 
-    current->replyFinished(reply);
+    account->replyFinished(reply);
 
     QString logString;
     QDateTime now = QDateTime::currentDateTimeUtc();
@@ -165,17 +252,20 @@ void BattleKnight::replyFinished(QNetworkReply* reply)
     logString.append(")");
     if(url.query().length() > 0) logString.append(",\n\t  GET:'"+url.query()+"'");
     QByteArray post = reply->property("postData").toByteArray();
-    if(post.length() > 0) logString.append(",\n\t POST:'"+post+"'");
-    qDebug() << logString;
+    if(post.length() > 0) {
+        logString.append(",\n\t POST:'"+post+"'");
+        logString.append(QString("\n\t               %1").arg(now.toMSecsSinceEpoch()));
+    }
+    qDebug() << logString.toLatin1().data();
 }
 
-void BattleKnight::injectHtml(QWebFrame* mainFrame, Account*)
+void BattleKnight::injectHtml(QWebFrame* mainFrame)
 {
     QWebElement pluginDiv = mainFrame->findFirstElement("#accountPlugin");
     if(!pluginDiv.isNull()) return;
 
-    QWebElement body = mainFrame->findFirstElement("body");
     QString di;
+    QWebElement body = mainFrame->findFirstElement("body");
 
     if(body.classes().contains("nonPremium")) {
         QWebElement netBar = mainFrame->findFirstElement("#mmonetbar");
@@ -188,6 +278,11 @@ void BattleKnight::injectHtml(QWebFrame* mainFrame, Account*)
         QWebElement head = mainFrame->findFirstElement("head");
         div = head.findFirst("style");
         div.removeFromDocument();
+    } else {
+        bkAccount* account = findAccount(mainFrame->url());
+        QJsonObject p;
+        p.insert("manor_royalty", true);
+        account->player()->setData(p);
     }
 
     if(readDataFile("inject.css", di) <= 0) {
@@ -200,13 +295,18 @@ void BattleKnight::injectHtml(QWebFrame* mainFrame, Account*)
     }
     body.appendInside(di);
 
-    if(readDataFile("gamescript.js", di) <= 0) {
-        return;
-    }
-    mainFrame->evaluateJavaScript(di);
-
     if(readDataFile("locations.json", di) <= 0) {
         return;
     }
     mainFrame->evaluateJavaScript(di.prepend("var km_locations=").append(";"));
+
+    if(readDataFile("karma.json", di) > 0) {
+        mainFrame->evaluateJavaScript(di.prepend("var km_karma=").append(";"));
+    }
+
+    if(readDataFile("updater.js", di) > 0) {
+        mainFrame->evaluateJavaScript(di);
+        //qDebug() << di.toLocal8Bit().data();
+    }
+
 }

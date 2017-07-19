@@ -101,6 +101,8 @@ QNetworkReply* NetworkAccessManager::createRequest(Operation op, const QNetworkR
         if(length > 0) {
             QByteArray data = outgoingData->peek(length);
             reply->setProperty("postData",QVariant(data));
+            //if(reply->url().toString().contains("userapi/jserror"))
+                //qWarning() << "NetworkAccessManager::createRequest for:" << reply->url().toString() << data;
         }
     }
     return(reply);
@@ -117,8 +119,9 @@ void NetworkAccessManager::readReplyInternal()
     reply->setProperty("getData",QVariant(data));
 }
 
-void NetworkAccessManager::requestFinished(QNetworkReply *reply)
+void NetworkAccessManager::requestFinished(QNetworkReply* /*reply*/)
 {
+/*
     requestFinishedCount++;
 
     if (reply->attribute(QNetworkRequest::SourceIsFromCacheAttribute).toBool() == true)
@@ -144,6 +147,7 @@ void NetworkAccessManager::requestFinished(QNetworkReply *reply)
 
     qDebug("STATS [%lli requests total] [%3.2f%% from cache] [%3.2f%% pipelined] [%3.2f%% SSL/TLS] [%3.2f%% Zerocopy]", requestFinishedCount, pctCached, pctPipelined, pctSecure, pctDownloadBuffer);
 #endif
+*/
 }
 
 void NetworkAccessManager::loadSettings()

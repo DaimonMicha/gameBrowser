@@ -4,6 +4,7 @@
 #include "plugininterface.h"
 #include "account.h"
 
+class OGameDock;
 
 class OGame : public QObject, public PluginInterface
 {
@@ -13,6 +14,7 @@ class OGame : public QObject, public PluginInterface
     Q_INTERFACES(PluginInterface)
 
 public:
+    //OGame() : PluginInterface() { s_dockWidget = new QToolBox(); }
     ~OGame();
 
     QString name() const { return(QLatin1String("OGame")); }
@@ -30,8 +32,12 @@ private:
     void injectHtml(QWebFrame*, Account*);
     QByteArray lastServerLogin(QUrl&);
 
+private slots:
+    void hasPlayer();
+
 private:
     QList<Account *>            m_accounts;
+    OGameDock*                  m_browserDock;
 };
 
 #endif // OGAME_H

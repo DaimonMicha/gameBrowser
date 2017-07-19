@@ -23,9 +23,9 @@
  * Profile:  knight_id, health
  * Checkers: Account, Duels, Missions, GroupMissions, ClanWar, Turnier
  * Timer:    mission, groupmission, treasury, karma, manor, clanwar (round), turnier (round)
- * Player:
- * Report:   duel, turnier, clanwar (rounds?)
- * Item:     hinweise
+ * PlayerManager:
+ * ReportManager:   duel, turnier, clanwar (rounds?)
+ * ItemManager:     hinweise
  *
  */
 
@@ -35,7 +35,7 @@
 Account::Account(const QString cookie, const QUrl url, QObject *parent) :
     QObject(parent),
     m_cookieValue(cookie),
-    s_networkManager(0),
+    s_networkManager(Q_NULLPTR),
     m_cleanTimer(0),
     s_playerManager(new PlayerManager),
     s_itemManager(new ItemManager),
@@ -53,6 +53,7 @@ Account::Account(const QString cookie, const QUrl url, QObject *parent) :
     m_gmTimer = startTimer(60 * 60 * 1000);
     connect(s_reportManager, SIGNAL(playerCheck(QVariant)),
             this, SLOT(setPlayer(QVariant)));
+    m_accStatus.insert("enablePlugin", QJsonValue(true));
 }
 
 void Account::toggle(const QString option, const bool soll)
@@ -281,20 +282,18 @@ void Account::loadFinished(QWebPage* page)
     QUrl url = mainFrame->url();
     QStringList paths = url.path().split("/",QString::SkipEmptyParts);
 
-    if(!paths.count()) return; // nothing to do, login evtl?
+    if(!paths.count()) return; // nothing to do
 
-    if(!s_networkManager) s_networkManager = page->networkAccessManager();
+    if(s_networkManager == Q_NULLPTR) s_networkManager = page->networkAccessManager();
 
     BattleKnight* plugin = qobject_cast<BattleKnight *>(parent());
-    if(plugin) {
-        QString script;
-        //plugin->readDataFile("locations.json",script);
-        //mainFrame->evaluateJavaScript(script.prepend("var km_locations=").append(";"));
-        plugin->readDataFile("checkscript.js",script);
-        mainFrame->evaluateJavaScript(script);
-    } else {
-        return;
-    }
+    if(!plugin) return;
+
+    QString script;
+    //plugin->readDataFile("locations.json",script);
+    //mainFrame->evaluateJavaScript(script.prepend("var km_locations=").append(";"));
+    plugin->readDataFile("checkscript.js",script);
+    mainFrame->evaluateJavaScript(script);
 
     if(paths.at(0) == QString("user")) {
         if(paths.count() == 1) {
@@ -381,18 +380,21 @@ void Account::replyFinished(QNetworkReply* reply)
 
     if(!paths.count()) return; // nothing to do, login evtl?
 
-    if(!s_networkManager) s_networkManager = reply->manager();
+    if(s_networkManager == Q_NULLPTR) s_networkManager = (QNetworkAccessManager *)reply->manager();
 
     if(paths.at(0) == QString("ajax")) {
         if(paths.count() < 3) return;
         if(paths.at(1) == QString("ajax")) {
+            QJsonDocument json = QJsonDocument::fromJson(reply->property("getData").toByteArray());
             if(paths.at(2) == QString("getInventory")) {
-                QJsonDocument json = QJsonDocument::fromJson(reply->property("getData").toByteArray());
                 QJsonArray items = json.object().value("items").toArray();
                 for(int i = 0; i < items.size(); ++i) {
                     setItem(items[i].toObject());
                 }
             } else if(paths.at(2) == QString("buyItem")) {
+                QJsonDocument debug(json.object().value("data").toObject()
+                                    .value("item").toObject());
+                qDebug() << "buyItem:" << debug.toJson().data();
 /*
 
 buyItem: "{"result":true,"reason":"","data":{"item":{"item_id":4785682,"item_level":"1",
@@ -460,6 +462,7 @@ buyItem: "{"result":true,"reason":"","data":{"item":{"item_id":4785682,"item_lev
             // (/world/startTravel), POST:'travelwhere=CoastalFortressOne&travelhow=horse&travelpremium=0'
             QUrlQuery query(reply->property("postData").toString());
             if(query.hasQueryItem("travelwhere")) {
+                qDebug() << "startTravel:" << query.toString();
             }
         }
     } else if(paths.at(0) == QString("mail")) {
