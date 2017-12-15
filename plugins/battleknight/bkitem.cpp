@@ -36,6 +36,12 @@ bkItem::~bkItem()
     //qDebug() << "bkItem [" << item_id << "] destroyed.";
 }
 
+bool bkItem::contains(const QString& key)
+{
+    QVariant test = value(key);
+    return test.isValid();
+}
+
 QVariant bkItem::value(const QString& key)
 {
     QVariant ret;

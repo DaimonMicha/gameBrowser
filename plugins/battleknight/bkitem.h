@@ -15,6 +15,7 @@ public:
     ~bkItem();
 
     int id() const { return item_id; }
+    bool contains(const QString& key);
     QVariant value(const QString& key);
     QByteArray toJson() const {
         return QJsonDocument(m_data).toJson();

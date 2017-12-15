@@ -7,7 +7,7 @@
 bkItemManager::bkItemManager(QObject *parent) :
     QObject(parent)
 {
-    qDebug() << "bkItemManager created.";
+    //qDebug() << "bkItemManager created.";
 }
 
 bkItemManager::~bkItemManager()

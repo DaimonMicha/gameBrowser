@@ -75,7 +75,7 @@ void bkParser::replyFinished(QNetworkReply* reply)
 
 void bkParser::loadFinished(QWebPage* page)
 {
-    checkAccount(page);
+    //checkAccount(page);
 
     QVariant titleTimer = page->mainFrame()->evaluateJavaScript("if(typeof l_titleTimerEndTime !== 'undefined') l_titleTimerEndTime;");
     if(titleTimer.isValid()) {
@@ -144,9 +144,9 @@ void bkParser::loadFinished(QWebPage* page)
         if(!paths.isEmpty()) {
             QString second = paths.takeFirst();
             if(second == "prepare") {// Kriegsvorbereitung
-                tavernPrepareHtml(page);
+                //tavernPrepareHtml(page);
             } else if(second == "battle") {// Krieg
-                tavernBattleHtml(page);
+                //tavernBattleHtml(page);
             } else if(second == "fight") {// Kämpfe
             }
         }
@@ -154,15 +154,15 @@ void bkParser::loadFinished(QWebPage* page)
         if(!paths.isEmpty()) {
             QString second = paths.takeFirst();
             if(second == "prepare") {// Kriegsvorbereitung
-                tavernPrepareHtml(page);
+                //tavernPrepareHtml(page);
             } else if(second == "battle") {// Krieg
-                tavernBattleHtml(page);
+                //tavernBattleHtml(page);
             } else if(second == "fight") {// Kämpfe
             }
         }
     } else if(first == "manor") {// Landsitz
     } else if(first == "treasury") {
-        treasuryHtml(page);
+        //treasuryHtml(page);
     } else if(first == "world") {
         if(!paths.isEmpty()) {
             QString second = paths.takeFirst();
@@ -175,7 +175,7 @@ void bkParser::loadFinished(QWebPage* page)
         }
     } else if(first == "joust") {// Turnier
         if(paths.isEmpty()) {
-            joustHtml(page);
+            //joustHtml(page);
         } else {
             QString second = paths.takeFirst();
             if(second == "zones") {// Trefferzonen Turnier
@@ -200,34 +200,25 @@ void bkParser::loadFinished(QWebPage* page)
          * 		</div>
          *  </div>
          */
-    } else if(first == "groupmission") {
-        if(!paths.isEmpty()) {
-            QString second = paths.takeFirst();
-            if(second == "group") {// /groupmission/group
-                if(!titleTimer.isValid()) groupmissionGroupHtml(page);
-            }
-        } else {// /groupmission
-            if(!titleTimer.isValid()) groupmissionGroupHtml(page);
-        }
     } else if(first == "duel") {
         if(!paths.isEmpty()) {
             QString second = paths.takeFirst();
             if(second == "compare") { // /duel/compare
-                duelCompareHtml(page);
+                //duelCompareHtml(page);
             } else if(second == "duel") { // /duel/duel
-                duelDuelHtml(page);
+                //duelDuelHtml(page);
             }
         } else { // auf "Turnierplatz" geklickt...
             //qDebug() << "duel - Turnierplatz angeklickt...";
-            if(!titleTimer.isValid()) duelHtml(page);
+            //if(!titleTimer.isValid()) duelHtml(page);
         }
     } else if(first == "highscore") {
         if(!paths.isEmpty()) { // /highscore/order/
         } else {
-            highscoreHtml(page);
+            //highscoreHtml(page);
         }
     }
-    qDebug() << "\tbkParser::loadFinished(#mainContent)" << tester.classes();
+    //qDebug() << "\tbkParser::loadFinished(#mainContent)" << tester.classes();
 }
 
 void bkParser::checkReplyPaths(QNetworkReply* reply)
@@ -283,34 +274,13 @@ void bkParser::checkReplyPaths(QNetworkReply* reply)
                 // <td class="memberRubies">
             }
         }
-    } else if(first == "world") {
-        if(!paths.isEmpty()) {
-            QString second = paths.takeFirst();
-            if(second == "location") { // /world/location
-                QUrlQuery query(reply->property("postData").toString());
-                if(!query.hasQueryItem("missionArt")) return;
-                if(query.queryItemValue("buyRubies").toInt() > 0) return;
-                int p = p_account->status("missionPoints").toInt();
-                QString art = query.queryItemValue("missionArt");
-                if(art == "small") {
-                    p -= 20;
-                } else if(art == "medium") {
-                    p -= 40;
-                } else if(art == "large") {
-                    p -= 60;
-                }
-                if(p < 0) return;
-                QVariant result(p);
-                p_account->setStatus("missionPoints", result);
-            }
-        }
     } else if(first == "mail") {
         if(!paths.isEmpty()) {
             QString second = paths.takeFirst();
             if(second == "getInbox") { // /mail/getInbox
                 QUrlQuery query(reply->property("postData").toString());
                 if(query.hasQueryItem("inboxtype") && query.queryItemValue("inboxtype") == "reports") {
-                    mailInbox(data);
+                    //mailInbox(data);
                 }
             }
         }
@@ -321,13 +291,13 @@ void bkParser::checkReplyPaths(QNetworkReply* reply)
                 if(!paths.isEmpty()) {
                     QString third = paths.takeFirst();
                     if(third == "buyItem") { // /ajax/ajax/buyItem
-                        ajaxBuyItem(data);
+                        //ajaxBuyItem(data);
                     } else if(third == "sellItem") { // /ajax/ajax/sellItem
                     } else if(third == "placeItem") { // /ajax/ajax/placeItem
                         //qDebug() << data.data();
                     } else if(third == "wearItem") { // /ajax/ajax/wearItem
                     } else if(third == "getInventory") { // /ajax/ajax/getInventory
-                        ajaxGetInventory(data);
+                        //ajaxGetInventory(data);
                     }
                 }
             } else if(second == "duel") {
@@ -644,90 +614,8 @@ void bkParser::userKarmaHtml(QWebPage* page)
     //qDebug() << result;
 }
 
-void bkParser::groupmissionGroupHtml(QWebPage* page)
+void bkParser::groupmissionGroupHtml(QWebPage*)
 {
-    QWebElement doc = page->mainFrame()->documentElement();
-    QWebElement groupTable = doc.findFirst("#highscoreClanTable");
-    if(!groupTable.isNull()) {
-        QVariant points(120);
-        p_account->setStatus("groupMissionPoints", points);
-        // tbody: groups...
-        QWebElement tbody = groupTable.findFirst("tbody");
-        QWebElementCollection groups = tbody.findAll("tr");
-        foreach(QWebElement row, groups) {
-            // <tbody><tr class="noBreakRow"><td colspan="8">Keine Daten gefunden</td></tr></tbody>
-            if(row.hasClass("noBreakRow")) {
-                QVariant modus(gm_no_group_found); // no_group_found
-                p_account->setStatus("modusGM", modus);
-                qDebug() << "...no groups found!";
-                break;
-            }
-
-            QWebElement tester = row.findFirst("td.highscore02");
-            QString levels = tester.toPlainText().trimmed();
-            QVariant modus(gm_group_found); // group_found
-            p_account->setStatus("modusGM", modus);
-
-            qDebug() << "bkParser::groupmissionGroupHtml(group found)" << levels;
-
-            // <tbody><tr><td class="highscore01"><a href="../groupmission/groupProfile/?groupID=52298">4</a></td>
-            // <td class="highscore02">36 - 61</td>
-            // <td class="highscore03 playerName"><a href="./common/profile/21616/Tavern/GroupMission">Vizegraf lordlulu</a> <a href="./common/orderprofile/5/Tavern/GroupMission">[GdM]</a></td>
-            // <td class="highscore04">1</td>
-            // <td class="highscore05">4</td>
-            // <td class="highscore06">mittel</td>
-            // <td class="highscore07">Nein</td>
-            // <td scope="col" class="highscore08"><a class="thIcon checkIcon mediumToolTip"></a></td></tr></tbody>
-
-            // QWebElement button = row.findFirst("a.checkIcon");
-            // button.evaluateJavaScript("click()");
-        }
-        return;
-    }
-    /*var inGroup
-     * inGroup: <form id="formFound" action="http://s12.de.battleknight.gameforge.com/groupmission/group" method="post">
-     */
-    QVariant inGroup = page->mainFrame()->evaluateJavaScript("if(typeof inGroup !== 'undefined') inGroup;");
-    //qDebug() << "inGroup:" << inGroup;
-    if(inGroup.isValid() && inGroup.toBool()) {
-        QVariant points(120);
-        p_account->setStatus("groupMissionPoints", points);
-        QVariant modus(gm_in_group); // in_group
-        p_account->setStatus("modusGM", modus);
-
-        //Group auslesen...
-        QWebElement groupForm = doc.findFirst("form#formFound");
-        if(groupForm.isNull()) return;
-        QWebElementCollection divs = groupForm.findAll("div.clearfix");
-        /*
-         * <div class="formLine clearfix">
-                    <label>Automatischer Missionsstart</label>
-                    <div class="formField">
-                        schwer						<div class="subLabel">* Voraussichtlicher Schwierigkeitsgrad. Falls nicht verfügbar wird der nächst leichtere gewählt.</div>
-                    </div>
-                <!-- end .formLine-->
-                </div>
-         */
-        if(divs.count() > 6) {
-            QString start = divs.at(5).firstChild().nextSibling().toPlainText();
-            start = start.left(start.indexOf("\n"));
-            qDebug() << "inGroup: div.clearfix (count)" << divs.count()
-                     << divs.at(4).firstChild().nextSibling().toPlainText()//aktuelle Anzahl Mitglieder
-                     << "von"
-                     << divs.at(3).firstChild().nextSibling().toPlainText()//maximale Anzahl Mitglieder
-                     << start//Missionsstart
-                     ;
-        }
-    }
-
-    QWebElement tester = doc.findFirst("div.innerContent");
-    if(tester.isNull()) return;
-    QWebElement p = tester.findFirst("em");
-    if(p.isNull()) return;
-    QVariant points(p.toPlainText().trimmed().toInt());
-    p_account->setStatus("groupMissionPoints", points);
-    QVariant modus(gm_no_points); // no_points
-    p_account->setStatus("modusGM", modus);
 }
 
 void bkParser::worldHtml(QWebPage* page)
@@ -861,22 +749,32 @@ void bkParser::highscoreHtml(QWebPage* page)
             if(col.classes().contains("highscore03")) {
                 QWebElementCollection link = col.findAll("a");
                 QUrl url(link.at(0).attribute("href"));
-                knight.insert("knight_id", QJsonValue(url.path().split("/",QString::SkipEmptyParts).at(2).toInt()));
-                QString name = link.at(0).toPlainText();
-                int pos = name.indexOf(' ');
-                knight.insert("knight_rang", QJsonValue(name.left(pos)));
-                knight.insert("knight_name", QJsonValue(name.mid(pos+1)));
-                if(link.count() > 1) {
+                QStringList upath = url.path().split("/",QString::SkipEmptyParts);
+                qDebug() << upath;
+                if(upath.count() == 0) {
+                    qDebug() << link.at(1).attribute("href");
                     url = link.at(1).attribute("href");
-                    knight.insert("clan_id", QJsonValue(url.path().split("/",QString::SkipEmptyParts).at(2).toInt()));
-                    //clanManager
-                    bkClan* clan = world->clan(knight.value("clan_id").toInt());
-                    QJsonObject co;
-                    QString tag = link.at(1).toPlainText().trimmed();
-                    tag = tag.mid(1); tag.chop(1);
-                    co.insert("clan_id", QJsonValue(url.path().split("/",QString::SkipEmptyParts).at(2).toInt()));
-                    co.insert("clan_tag", QJsonValue(tag));
-                    clan->setData(co);
+                    upath = url.path().split("/",QString::SkipEmptyParts);
+                    //continue;
+                }
+                if(upath.at(1) == "profile") {
+                    knight.insert("knight_id", QJsonValue(upath.at(2).toInt()));
+                    QString name = link.at(0).toPlainText();
+                    int pos = name.indexOf(' ');
+                    knight.insert("knight_rang", QJsonValue(name.left(pos)));
+                    knight.insert("knight_name", QJsonValue(name.mid(pos+1)));
+                    if(link.count() > 1) {
+                        url = link.at(1).attribute("href");
+                        knight.insert("clan_id", QJsonValue(url.path().split("/",QString::SkipEmptyParts).at(2).toInt()));
+                        //clanManager
+                        bkClan* clan = world->clan(knight.value("clan_id").toInt());
+                        QJsonObject co;
+                        QString tag = link.at(1).toPlainText().trimmed();
+                        tag = tag.mid(1); tag.chop(1);
+                        co.insert("clan_id", QJsonValue(url.path().split("/",QString::SkipEmptyParts).at(2).toInt()));
+                        co.insert("clan_tag", QJsonValue(tag));
+                        clan->setData(co);
+                    }
                 }
             }
             if(col.classes().contains("highscore04")) {
@@ -1101,6 +999,7 @@ void bkParser::ajaxBuyItem(const QByteArray& data)
 // /ajax/duel/proposals
 void bkParser::ajaxProposal(const QByteArray& data)
 {
+/*
     QJsonDocument json = QJsonDocument::fromJson(data);
     if(!json.object().value("result").toBool()) return;
 
@@ -1116,7 +1015,7 @@ void bkParser::ajaxProposal(const QByteArray& data)
 
     QVariant num((int)p->id());
     p_account->setStatus("currentProposal", num);
-
+*/
     //qDebug() << "\nbkParser::ajaxProposal(proposal)\n" << p;
 }
 

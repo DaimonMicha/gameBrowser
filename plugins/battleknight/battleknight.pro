@@ -33,11 +33,20 @@ SOURCES         += \
     bkclanmanager.cpp \
     bkreport.cpp \
     bkreportmanager.cpp \
-    accmodule.cpp \
     bklogic.cpp \
     bkmodulemanager.cpp \
     bkmodule.cpp \
-    bkaccountmodule.cpp
+    bkaccountmodule.cpp \
+    bkduelsmodule.cpp \
+    bkgmmodule.cpp \
+    bkmissionsmodule.cpp \
+    bktreasurymodule.cpp \
+    bkosmodule.cpp \
+    bktournamentmodule.cpp \
+    bkworkmodule.cpp \
+    bkreportsmodule.cpp \
+    bkhighscoremodule.cpp \
+    bktravelmodule.cpp
 
 HEADERS         += \
                 battleknight.h \
@@ -59,11 +68,20 @@ HEADERS         += \
     bkclanmanager.h \
     bkreport.h \
     bkreportmanager.h \
-    accmodule.h \
     bklogic.h \
     bkmodulemanager.h \
     bkmodule.h \
-    bkaccountmodule.h
+    bkaccountmodule.h \
+    bkduelsmodule.h \
+    bkgmmodule.h \
+    bkmissionsmodule.h \
+    bktreasurymodule.h \
+    bkosmodule.h \
+    bktournamentmodule.h \
+    bkworkmodule.h \
+    bkreportsmodule.h \
+    bkhighscoremodule.h \
+    bktravelmodule.h
 
 RESOURCES       += \
                 htmls/data.qrc

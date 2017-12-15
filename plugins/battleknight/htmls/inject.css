@@ -23,6 +23,9 @@
     padding-left: 4px;
     padding-right: 4px;
 }
+.kmTopic.kmActiveTopic {
+    border: 3px solid yellow;
+}
 .kmTopic table {
     width: 100%;
     color: white;

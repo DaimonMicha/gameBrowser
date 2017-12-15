@@ -35,6 +35,15 @@ bkPlayer::~bkPlayer()
     //qDebug() << "bkPlayer [" << knight_id << "] destroyed.";
 }
 
+bool bkPlayer::canFight(bkPlayer* other)
+{
+    bool ret = true;
+
+    if(other->value("clan_id").isValid() && !other->value("clan_id").isNull()) ret = false;
+
+    return ret;
+}
+
 bool bkPlayer::isGreaterThan(bkPlayer* other)
 {
     bool ret = false;

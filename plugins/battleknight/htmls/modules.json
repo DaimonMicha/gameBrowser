@@ -20,30 +20,6 @@
             "timer": 0,
             "duration": 86400,
             "state": 0
-        },
-        "manor": {
-        }
-    },
-    "Missions": {
-        "enable": false,
-        "title": "Missionen",
-        "strength": 32,
-        "state": 0,
-        "progress": {
-            "count": 0,
-            "timer": 0,
-            "duration": 3600
-        }
-    },
-    "GM": {
-        "enable": false,
-        "title": "Gruppenmission",
-        "strength": 32,
-        "state": 0,
-        "progress": {
-            "count": 0,
-            "timer": 0,
-            "duration": 3600
         }
     },
     "Duels": {
@@ -52,11 +28,32 @@
         "strength": 32,
         "state": 0
     },
-    "Work": {
-        "enable": true,
-        "title": "Arbeit",
+    "GM": {
+        "enable": false,
+        "title": "Gruppenmission",
         "strength": 32,
-        "state": 0
+        "state": 0,
+        "points": 0,
+        "wait": 0,
+        "progress": {
+            "count": 0,
+            "end": 0,
+            "timer": 0,
+            "duration": 3600
+        }
+    },
+    "Missions": {
+        "enable": false,
+        "title": "Missionen",
+        "strength": 32,
+        "state": 0,
+        "points": 0,
+        "location": "",
+        "progress": {
+            "count": 0,
+            "timer": 0,
+            "duration": 3600
+        }
     },
     "OS": {
         "enable": false,
@@ -65,6 +62,7 @@
         "state": 0,
         "progress": {
             "count": 0,
+            "end": 0,
             "timer": 0,
             "duration": 3600
         }
@@ -83,12 +81,22 @@
     "Treasury": {
         "enable": false,
         "title": "Schatzkammer",
+        "tooltip": "soll ich die Schatzkammer füllen?",
         "strength": 32,
         "state": 0,
         "progress": {
             "count": 0,
-            "timer": 0,
-            "duration": 3600
+            "duration": 21600,
+            "timer": 0
         }
-    }
+    },
+    "Work": {
+        "enable": true,
+        "title": "Arbeit",
+        "strength": 32,
+        "state": 0
+    },
+    "Travel": {},
+    "Reports": {},
+    "Highscore": {}
 }

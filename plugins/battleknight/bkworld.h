@@ -48,6 +48,8 @@ public:
     }
 
     QJsonObject locationId(const QString&);
+    QJsonObject locationName(const QString&);
+
     QJsonObject karmaId(const QString&);
 
 

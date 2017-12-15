@@ -19,6 +19,7 @@ public:
         return QJsonDocument(m_data).toJson();
     }
 
+    bool canFight(bkPlayer* other);
     bool isGreaterThan(bkPlayer* other);
 
     friend QDebug operator << (QDebug dbg, const bkPlayer* player);

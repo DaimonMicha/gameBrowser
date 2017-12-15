@@ -1,9 +1,6 @@
 #ifndef BATTLEKNIGHT_H
 #define BATTLEKNIGHT_H
-
 #include "plugininterface.h"
-#include "accmodule.h"
-
 
 #include <QJsonDocument>
 
@@ -45,8 +42,6 @@ private slots:
 private:
     QList<bkWorld *>            m_worldList;
     QList<bkAccount *>          m_accountList;
-
-    QList<QPointer<accModule> > m_modules;
 
     QList<QPointer<QWebPage> >  m_webPages;
 

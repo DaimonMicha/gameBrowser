@@ -8,7 +8,7 @@
 bkPlayerManager::bkPlayerManager(QObject *parent) :
     QObject(parent)
 {
-    qDebug() << "bkPlayerManager created.";
+    //qDebug() << "bkPlayerManager created.";
 }
 
 bkPlayerManager::~bkPlayerManager()

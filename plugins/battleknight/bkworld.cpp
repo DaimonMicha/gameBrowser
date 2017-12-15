@@ -19,7 +19,7 @@ bkWorld::bkWorld(const QString& name, QObject *parent) :
     p_itemManager(new bkItemManager(this)),
     p_reportManager(new bkReportManager(this))
 {
-    qDebug() << "bkWorld" << m_name << "created.";
+    //qDebug() << "bkWorld" << m_name << "created.";
 }
 
 bkWorld::~bkWorld()
@@ -31,10 +31,18 @@ bkWorld::~bkWorld()
     qDebug() << "bkWorld" << m_name << "destroyed.";
 }
 
-QJsonObject bkWorld::locationId(const QString& loc)
+QJsonObject bkWorld::locationId(const QString& id)
 {
     foreach(QString sh, m_locations.keys()) {
-        if(sh == loc) return m_locations.value(loc).toObject();
+        if(sh == id) return m_locations.value(id).toObject();
+    }
+    return QJsonObject();
+}
+
+QJsonObject bkWorld::locationName(const QString& name)
+{
+    foreach(QJsonValue loc, m_locations) {
+        if(name == loc.toObject().value("name").toString()) return loc.toObject();
     }
     return QJsonObject();
 }

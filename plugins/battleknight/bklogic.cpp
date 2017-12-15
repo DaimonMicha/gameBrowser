@@ -149,6 +149,7 @@ void bkLogic::loadFinished(QWebPage* page)
             checkWorking();
         }
     }
+/*
     if(urlPath == "/groupmission" || urlPath == "/groupmission/group") {
         if(!titleTimer.isValid()) {
             checkGM();
@@ -166,13 +167,14 @@ void bkLogic::loadFinished(QWebPage* page)
             checkProposal();
         }
     }
+*/
     // hier entscheiden, ob wir zuhauen.
     if(urlPath == "/duel/compare") {
     }
     if(urlPath == "/duel/duel") {
         if(titleTimer.isValid()) { // cooldown nach duell
             int wait = qrand() % ((titleTimer.toInt()*1000)/6) + 123;
-            QTimer::singleShot(wait, p_account->parser(), SLOT(callReports()));
+            //QTimer::singleShot(wait, p_account->parser(), SLOT(callReports()));
             int work = (titleTimer.toInt()*1000) - wait;
             if(p_account->status("groupMissionPoints").toInt() > 110) {
                 m_workerState = w_call_gm;
@@ -194,7 +196,7 @@ void bkLogic::loadFinished(QWebPage* page)
     }
     if(urlPath == "/tavern/fightresult") {
         int wait = qrand() % ((titleTimer.toInt()*1000)/6) + 829;
-        QTimer::singleShot(wait, p_account->parser(), SLOT(callReports()));
+        //QTimer::singleShot(wait, p_account->parser(), SLOT(callReports()));
     }
 
 
@@ -272,6 +274,7 @@ void bkLogic::goWorking()
 
 void bkLogic::checkGM()
 {
+/*
     int max = (7*60*1000); // max 7min
     int gmModus = p_account->status("modusGM").toInt();
     switch(gmModus) {
@@ -286,6 +289,7 @@ void bkLogic::checkGM()
     }
     //qDebug() << "bkLogic::checkGM" << wait << m_workerState;
     startWorker(123, max);
+*/
 }
 
 void bkLogic::checkProposal()

@@ -7,7 +7,7 @@
 bkReportManager::bkReportManager(QObject *parent) :
     QObject(parent)
 {
-    qDebug() << "bkReportManager created.";
+    //qDebug() << "bkReportManager created.";
 }
 
 bkReportManager::~bkReportManager()

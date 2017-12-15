@@ -7,7 +7,7 @@
 bkClanManager::bkClanManager(QObject *parent) :
     QObject(parent)
 {
-    qDebug() << "bkClanManager created.";
+    //qDebug() << "bkClanManager created.";
 }
 
 bkClanManager::~bkClanManager()

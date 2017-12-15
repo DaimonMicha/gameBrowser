@@ -30,35 +30,10 @@ BattleKnight::BattleKnight() :
         //qDebug() << QJsonDocument(m_moduleDefaults).toJson().data();
         //accWorld->setLocationStrings(di);
     }
-
-    foreach(QString key, m_moduleDefaults.keys()) {
-        QJsonObject mod = m_moduleDefaults.value(key).toObject();
-        //qDebug() << key;
-        if(key == "Account") {
-            m_modules.append(new modAccount(key, mod.value("title").toString(), mod.value("tooltip").toString()));
-        } else if(key == "Missions") {
-            m_modules.append(new modMissions(key, mod.value("title").toString(), mod.value("tooltip").toString()));
-        } else if(key == "GM") {
-            m_modules.append(new modGM(key, mod.value("title").toString(), mod.value("tooltip").toString()));
-        } else if(key == "Duels") {
-            m_modules.append(new modDuel(key, mod.value("title").toString(), mod.value("tooltip").toString()));
-        } else {
-            m_modules.append(new accModule(key, mod.value("title").toString(), mod.value("tooltip").toString()));
-        }
-    }
-/*
-    m_modules.append(new accModule("Work", "Arbeiten"));
-    m_modules.append(new accModule("Clanwar", "Ordensschlacht"));
-    m_modules.append(new accModule("Turnier", "Turnier"));
-    m_modules.append(new accModule("Treasury", "Schatzkammer"));
-*/
 }
 
 BattleKnight::~BattleKnight()
 {
-    while(!m_modules.isEmpty()) {
-        m_modules.takeLast()->deleteLater();
-    }
     while(!m_accountList.isEmpty()) {
         m_accountList.takeLast()->deleteLater();
     }
@@ -194,7 +169,7 @@ void BattleKnight::loadFinished(QWebPage* page)
     if(s_networkManager == Q_NULLPTR) s_networkManager = page->networkAccessManager();
 
     // look for an account with that cookie
-    bkAccount* account = findAccount(page->mainFrame()->url());
+    bkAccount* account = findAccount(url);
     if(account == Q_NULLPTR) {
         qDebug() << "BattleKnight::loadFinished() no account found!";
         return;
@@ -207,13 +182,10 @@ void BattleKnight::loadFinished(QWebPage* page)
         m_webPages.append(page);
     }
 
-    page->mainFrame()->addToJavaScriptWindowObject("account", account);
     page->mainFrame()->evaluateJavaScript("window.onerror = null;");
+    page->mainFrame()->addToJavaScriptWindowObject("account", account);
     injectHtml(page->mainFrame());
     account->loadFinished(page);
-    foreach(accModule *module, m_modules) {
-        module->pageLoaded(account, page);
-    }
 
     QString logString;
     QDateTime now = QDateTime::currentDateTimeUtc();
@@ -266,24 +238,6 @@ void BattleKnight::injectHtml(QWebFrame* mainFrame)
 
     QString di;
     QWebElement body = mainFrame->findFirstElement("body");
-
-    if(body.classes().contains("nonPremium")) {
-        QWebElement netBar = mainFrame->findFirstElement("#mmonetbar");
-        netBar.removeFromDocument();
-        netBar = mainFrame->findFirstElement("#networkBar");
-        netBar.removeFromDocument();
-        QWebElement div = body.findFirst("div");
-        div.setStyleProperty("position","relative");
-        div.setStyleProperty("top","-32px");
-        QWebElement head = mainFrame->findFirstElement("head");
-        div = head.findFirst("style");
-        div.removeFromDocument();
-    } else {
-        bkAccount* account = findAccount(mainFrame->url());
-        QJsonObject p;
-        p.insert("manor_royalty", true);
-        account->player()->setData(p);
-    }
 
     if(readDataFile("inject.css", di) <= 0) {
         return;

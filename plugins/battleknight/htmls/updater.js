@@ -23,11 +23,6 @@ var km_updater = new Class({
     addProgress: function(topic, module) {
         if(!(this.options.progressbars).contains(topic)) {
             (this.options.progressbars).push(topic);
-            if(account.module(topic) !== null) {
-                //console.log('addProgress: ' + topic + ' = ' + JSON.stringify(account.module(topic)));
-            } else {
-                //console.log('addProgress: ' + module + '-' + topic + " = " + account.module(topic));
-            }
         }
         //console.log('addProgress: '+ this.options.progressbars.toString());
     },
@@ -49,16 +44,44 @@ var km_updater = new Class({
     },
 
     updateProgress: function(topic) {
-        var eta = parseInt(account.status('timer'+topic));
+        var eta;
+        var modul = '', category = topic;
+        var result = topic.match(/.[A-Z][a-z]/g);
+        if(result) {
+            for(idx = 0; idx < result.length; ++idx) {
+                var text = new String(result[idx]);
+                var pos = topic.indexOf(''+text.charAt(1), 1);
+                modul = topic.substring(0, pos);
+                category = topic.substring(pos);
+            }
+            eta = parseInt(account.state(modul, 'timer' + category));
+
+            //console.log('result (' + topic + '), ' + modul + ', ' + category + ', ' + text.length + ', ' + result + ': ' + eta );
+        }
+
+        if(account.module(modul) !== null) {
+            //console.log('updateProgress: ' + topic + ' = ' + JSON.stringify(account.module(modul)));
+        }
+
+        if(modul === '') modul = topic;
+
         var progressbarWidth = 0;
-        var text = '';
+        text = '';
         if(eta > 0) {
-            var duration = parseInt(account.status('timer'+topic+'Duration'));
+            //var duration = parseInt(account.status('timer'+topic+'Duration'));
+            var duration = parseInt(account.state(modul, 'timer'+category+'Duration'));
+            //console.log('duration: ' + duration);
             var values = countdown(eta);
             text += values.hours + ':' + values.minutes + ':' + values.seconds;
             var dir = 'up';
+/*
             if(typeof document.id('timeMeter'+topic).get('km_direction') !== 'undefined') {
                 dir = document.id('timeMeter'+topic).get('km_direction');
+            }
+*/
+            var timeMeter = document.id('timeMeter'+topic);
+            if(typeof timeMeter !== 'undefined') {
+                if(timeMeter.hasClass("timeMeterDown")) dir = "down";
             }
             //if(dir === null || dir === 'up') progressbarWidth = (100 - ((100 / duration) * eta).toInt());
             if(dir === 'down') progressbarWidth = ((100 / duration) * eta).toInt();
